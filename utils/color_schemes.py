@@ -47,24 +47,81 @@ class ColorSchemeManager:
     
     def _confidence_scheme(self, normalized_value: float) -> str:
         """
-        Confidence-based color scheme: Red (low) to Green (high) through Yellow.
+        Enhanced confidence-based color scheme with fine gradients for 10% probability distinctions.
+        Maps logprob values to colors with much finer granularity for better visual distinction.
         
         Args:
-            normalized_value: Value between 0 and 1
+            normalized_value: Value between 0 and 1 (normalized logprob)
         
         Returns:
-            RGB color string
+            RGB color string with fine gradient
         """
-        if normalized_value < 0.5:
-            # Red to yellow
-            red = 255
-            green = int(255 * normalized_value * 2)
+        # Use a much more granular approach with smoother transitions
+        # This creates distinct colors for every ~10% probability difference
+        
+        if normalized_value <= 0.1:
+            # Very low confidence: Deep red
+            red = 200
+            green = 0
             blue = 0
-        else:
-            # Yellow to green
-            red = int(255 * (1 - normalized_value) * 2)
+        elif normalized_value <= 0.2:
+            # Low confidence: Red to orange-red
+            t = (normalized_value - 0.1) / 0.1
+            red = 200 + int(55 * t)
+            green = int(50 * t)
+            blue = 0
+        elif normalized_value <= 0.3:
+            # Low-medium confidence: Orange-red to orange
+            t = (normalized_value - 0.2) / 0.1
+            red = 255
+            green = 50 + int(100 * t)
+            blue = 0
+        elif normalized_value <= 0.4:
+            # Medium-low confidence: Orange to yellow-orange
+            t = (normalized_value - 0.3) / 0.1
+            red = 255
+            green = 150 + int(80 * t)
+            blue = int(20 * t)
+        elif normalized_value <= 0.5:
+            # Medium confidence: Yellow-orange to yellow
+            t = (normalized_value - 0.4) / 0.1
+            red = 255
+            green = 230 + int(25 * t)
+            blue = 20 + int(30 * t)
+        elif normalized_value <= 0.6:
+            # Medium-high confidence: Yellow to yellow-green
+            t = (normalized_value - 0.5) / 0.1
+            red = 255 - int(80 * t)
+            green = 255
+            blue = 50 - int(50 * t)
+        elif normalized_value <= 0.7:
+            # High-medium confidence: Yellow-green to light green
+            t = (normalized_value - 0.6) / 0.1
+            red = 175 - int(100 * t)
             green = 255
             blue = 0
+        elif normalized_value <= 0.8:
+            # High confidence: Light green to medium green
+            t = (normalized_value - 0.7) / 0.1
+            red = 75 - int(50 * t)
+            green = 255 - int(30 * t)
+            blue = 0
+        elif normalized_value <= 0.9:
+            # Very high confidence: Medium green to dark green
+            t = (normalized_value - 0.8) / 0.1
+            red = 25 - int(25 * t)
+            green = 225 - int(75 * t)
+            blue = 0
+        else:
+            # Extremely high confidence: Deep green
+            red = 0
+            green = 150
+            blue = 0
+        
+        # Ensure RGB values are within valid range
+        red = max(0, min(255, red))
+        green = max(0, min(255, green))
+        blue = max(0, min(255, blue))
         
         return f"rgb({red}, {green}, {blue})"
     

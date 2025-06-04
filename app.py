@@ -82,27 +82,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize OpenAI client with enhanced error handling
-@st.cache_resource
-def get_openai_client():
-    """Initialize OpenAI client with API key from environment or user input."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        try:
-            api_key = st.secrets["OPENAI_API_KEY"]
-        except Exception:
-            api_key = None
-    
-    if api_key:
-        try:
-            client = OpenAI(api_key=api_key)
-            # Test the client with a simple request
-            client.models.list()
-            return client
-        except Exception as e:
-            st.error(f"Failed to initialize OpenAI client: {str(e)}")
-            return None
-    return None
+# OpenAI client initialization (no caching since API key is user-provided)
+def get_openai_client(api_key: str):
+    """Initialize OpenAI client with user-provided API key."""
+    try:
+        client = OpenAI(api_key=api_key)
+        # Test the client with a simple request
+        client.models.list()
+        return client
+    except Exception as e:
+        st.error(f"Failed to initialize OpenAI client: {str(e)}")
+        return None
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_tokens=100, temperature=0.7):
@@ -120,7 +110,12 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         Tuple of (OpenAI completion response with logprobs, error_message)
     """
     try:
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY"))
+        # Get the actual API key from session state (set during validation)
+        api_key = st.session_state.get("api_key")
+        if not api_key:
+            return None, {"error_type": "APIKeyError", "error_details": "No API key available"}
+        
+        client = OpenAI(api_key=api_key)
         
         response = client.chat.completions.create(
             model=model,
@@ -298,24 +293,27 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # API Key management with better UX
-        client = get_openai_client()
-        if not client:
-            st.error("🔑 API Key Required")
-            api_key = st.text_input(
-                "OpenAI API Key", 
-                type="password",
-                help="Enter your OpenAI API key. You can also set the OPENAI_API_KEY environment variable.",
-                placeholder="sk-..."
-            )
-            if api_key:
-                os.environ["OPENAI_API_KEY"] = api_key
-                st.rerun()
-            else:
-                st.warning("⚠️ Please provide your OpenAI API key to continue.")
-                st.stop()
+        # API Key management - always require user input for security
+        st.info("🔑 API Key Required")
+        api_key = st.text_input(
+            "OpenAI API Key", 
+            type="password",
+            help="Enter your OpenAI API key from https://platform.openai.com/api-keys",
+            placeholder="sk-..."
+        )
+        if not api_key:
+            st.warning("⚠️ Please provide your OpenAI API key to continue.")
+            st.stop()
         else:
-            st.success("✅ API Key Configured")
+            # Test the API key and store in session state
+            try:
+                test_client = OpenAI(api_key=api_key)
+                test_client.models.list()
+                st.success("✅ API Key Valid")
+                st.session_state.api_key = api_key
+            except Exception as e:
+                st.error(f"❌ Invalid API key: {str(e)}")
+                st.stop()
         
         st.divider()
         
@@ -337,35 +335,35 @@ def main():
         
         st.divider()
         
-        # Parameter presets
+        # Generation parameters with manual controls
         st.subheader("🎛️ Generation Parameters")
-        preset = st.selectbox(
-            "Parameter Preset",
-            list(MODEL_PRESETS.keys()),
-            help="Choose a preset or select 'Custom' for manual configuration."
+        
+        temperature = st.slider(
+            "Temperature", 
+            min_value=0.0, 
+            max_value=2.0, 
+            value=0.7, 
+            step=0.1,
+            help="Controls creativity. Lower = more focused, Higher = more creative"
         )
         
-        if preset != "Custom":
-            temperature = MODEL_PRESETS[preset]["temperature"]
-            max_tokens = MODEL_PRESETS[preset]["max_tokens"]
-            st.info(f"Using {preset} preset: Temperature={temperature}, Max Tokens={max_tokens}")
+        max_tokens = st.slider(
+            "Max Tokens", 
+            min_value=10, 
+            max_value=300, 
+            value=100,
+            help="Maximum number of tokens to generate"
+        )
+        
+        # Show parameter preset suggestions as info
+        if temperature <= 0.4:
+            st.info("💼 Academic/Technical writing mode")
+        elif temperature <= 0.7:
+            st.info("💬 Balanced conversation mode")
+        elif temperature <= 1.0:
+            st.info("🎨 Creative writing mode")
         else:
-            temperature = st.slider(
-                "Temperature", 
-                min_value=0.0, 
-                max_value=2.0, 
-                value=0.7, 
-                step=0.1,
-                help="Controls creativity. Lower = more focused, Higher = more creative"
-            )
-            
-            max_tokens = st.slider(
-                "Max Tokens", 
-                min_value=10, 
-                max_value=300, 
-                value=100,
-                help="Maximum number of tokens to generate"
-            )
+            st.info("🌈 Highly creative mode")
         
         st.divider()
         
@@ -458,7 +456,7 @@ def main():
     if generate_button and prompt.strip():
         with st.spinner("🤖 Generating text..."):
             # Create a hash of the API key for caching
-            api_key = os.environ.get("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
+            api_key = st.session_state.get("api_key")
             api_key_hash = hash(api_key) if api_key else "no_key"
             
             # Progress bar for better UX
