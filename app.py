@@ -168,6 +168,61 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         
         return None, detailed_error
 
+def create_top_choice_analysis(response):
+    """
+    Create HTML showing whether each token was the highest probability choice.
+    
+    Args:
+        response: OpenAI completion response with logprobs
+    
+    Returns:
+        HTML string with top choice analysis
+    """
+    if not response or not response.choices[0].logprobs:
+        return "No logprobs available"
+    
+    tokens = response.choices[0].logprobs.content
+    html_parts = []
+    
+    for token in tokens:
+        # Decode token bytes to string
+        try:
+            token_text = bytes(token.bytes).decode('utf-8', errors='replace')
+        except (AttributeError, TypeError):
+            token_text = str(token.token) if hasattr(token, 'token') else str(token)
+        
+        # Escape HTML characters
+        token_text = html.escape(token_text)
+        
+        # Check if this was the top choice by examining top_logprobs
+        was_top_choice = True
+        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+            # The first entry in top_logprobs should be the selected token
+            # If there are alternatives with higher probabilities, this wasn't the top choice
+            current_logprob = token.logprob
+            for alt_token in token.top_logprobs:
+                if alt_token.logprob > current_logprob:
+                    was_top_choice = False
+                    break
+        
+        # Calculate probability percentage
+        from math import exp
+        probability = exp(token.logprob) * 100
+        
+        # Create styling based on whether it was top choice
+        if was_top_choice:
+            # Green background for top choice
+            style = f"background-color: rgba(144, 238, 144, 0.3); padding: 1px 3px; border-radius: 3px; border: 1px solid rgba(0, 128, 0, 0.5);"
+            title = f"TOP CHOICE: {probability:.1f}% probability"
+        else:
+            # Orange background for not top choice
+            style = f"background-color: rgba(255, 165, 0, 0.3); padding: 1px 3px; border-radius: 3px; border: 1px solid rgba(255, 140, 0, 0.5);"
+            title = f"NOT TOP CHOICE: {probability:.1f}% probability"
+        
+        html_parts.append(f'<span class="token-highlight" style="{style}" title="{title}">{token_text}</span>')
+    
+    return ''.join(html_parts)
+
 def create_enhanced_highlighted_text(response, color_scheme="confidence"):
     """
     Create HTML with enhanced highlighted text based on logprobs.
@@ -566,6 +621,11 @@ def main():
             st.markdown("**Confidence-Based Highlighting:**")
             highlighted_html = create_enhanced_highlighted_text(response, color_scheme)
             st.markdown(f'<div class="analysis-container">{highlighted_html}</div>', unsafe_allow_html=True)
+            
+            st.markdown("**Top Choice Analysis:**")
+            st.caption("Shows whether each token was the highest probability option available")
+            top_choice_html = create_top_choice_analysis(response)
+            st.markdown(f'<div class="analysis-container">{top_choice_html}</div>', unsafe_allow_html=True)
         
         with tab2:
             completed_text = response.choices[0].message.content
