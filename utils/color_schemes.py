@@ -61,32 +61,32 @@ class ColorSchemeManager:
         
         if normalized_value <= 0.1:
             # Very low confidence: Deep red
-            red = 255
-            green = 100
-            blue = 100
+            red = 220
+            green = 50
+            blue = 50
         elif normalized_value <= 0.2:
             # Low confidence: Red to orange-red
             t = (normalized_value - 0.1) / 0.1
-            red = 255
-            green = 100 + int(50 * t)
-            blue = 100 - int(50 * t)
+            red = 220 + int(35 * t)
+            green = 50 + int(70 * t)
+            blue = 50
         elif normalized_value <= 0.3:
             # Low-medium confidence: Orange-red to orange
             t = (normalized_value - 0.2) / 0.1
             red = 255
-            green = 150 + int(60 * t)
-            blue = 50 + int(30 * t)
+            green = 120 + int(60 * t)
+            blue = 50
         elif normalized_value <= 0.4:
             # Medium-low confidence: Orange to yellow-orange
             t = (normalized_value - 0.3) / 0.1
             red = 255
-            green = 210 + int(30 * t)
-            blue = 80 + int(40 * t)
+            green = 180 + int(50 * t)
+            blue = 50 + int(70 * t)
         elif normalized_value <= 0.5:
             # Medium confidence: Yellow-orange to yellow
             t = (normalized_value - 0.4) / 0.1
             red = 255
-            green = 240 + int(15 * t)
+            green = 230 + int(25 * t)
             blue = 120 + int(50 * t)
         elif normalized_value <= 0.6:
             # Medium-high confidence: Yellow to yellow-green
