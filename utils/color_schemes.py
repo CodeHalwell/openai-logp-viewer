@@ -26,20 +26,32 @@ class ColorSchemeManager:
         
         Args:
             logprob: Log probability value
-            min_logprob: Minimum logprob for normalization
-            max_logprob: Maximum logprob for normalization
+            min_logprob: Minimum logprob for normalization (ignored for absolute mapping)
+            max_logprob: Maximum logprob for normalization (ignored for absolute mapping)
             scheme: Color scheme to use
         
         Returns:
             RGB color string
         """
-        # Normalize logprob to 0-1 scale
-        if max_logprob == min_logprob:
-            normalized = 0.5  # Default to middle value if no variation
-        else:
-            normalized = (logprob - min_logprob) / (max_logprob - min_logprob)
+        # Convert logprob to probability percentage for absolute mapping
+        from math import exp
+        probability = exp(logprob) * 100
         
-        normalized = max(0, min(1, normalized))  # Clamp to 0-1
+        # Map probability to 0-1 scale with absolute thresholds
+        if probability >= 80:
+            normalized = 1.0  # Very high confidence
+        elif probability >= 60:
+            normalized = 0.85  # High confidence
+        elif probability >= 40:
+            normalized = 0.7   # Medium-high confidence
+        elif probability >= 20:
+            normalized = 0.5   # Medium confidence
+        elif probability >= 10:
+            normalized = 0.3   # Low-medium confidence
+        elif probability >= 5:
+            normalized = 0.15  # Low confidence
+        else:
+            normalized = 0.0   # Very low confidence
         
         # Get color from selected scheme
         color_func = self.schemes.get(scheme, self._confidence_scheme)
