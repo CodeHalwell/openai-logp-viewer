@@ -8,6 +8,7 @@ Each word is colored based on the model's confidence in that token.
 
 import streamlit as st
 import os
+import html
 from openai import OpenAI
 import numpy as np
 from math import exp
