@@ -56,14 +56,15 @@ st.markdown("""
     }
     .token-highlight {
         display: inline;
-        margin: 0 1px;
-        padding: 1px 3px;
+        margin: 0;
+        padding: 1px 2px;
         border-radius: 2px;
         font-weight: normal;
-        white-space: pre;
+        white-space: normal;
         transition: all 0.1s ease;
         font-size: inherit;
         line-height: inherit;
+        word-break: normal;
     }
     .token-highlight:hover {
         box-shadow: 0 1px 3px rgba(0,0,0,0.3);
@@ -75,6 +76,11 @@ st.markdown("""
         padding: 1.5rem;
         border-radius: 0.75rem;
         margin: 1rem 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     @media (max-width: 768px) {
         .token-highlight {
