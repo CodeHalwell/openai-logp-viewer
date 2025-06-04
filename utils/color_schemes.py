@@ -61,62 +61,62 @@ class ColorSchemeManager:
         
         if normalized_value <= 0.1:
             # Very low confidence: Deep red
-            red = 200
-            green = 0
-            blue = 0
+            red = 255
+            green = 100
+            blue = 100
         elif normalized_value <= 0.2:
             # Low confidence: Red to orange-red
             t = (normalized_value - 0.1) / 0.1
-            red = 200 + int(55 * t)
-            green = int(50 * t)
-            blue = 0
+            red = 255
+            green = 100 + int(50 * t)
+            blue = 100 - int(50 * t)
         elif normalized_value <= 0.3:
             # Low-medium confidence: Orange-red to orange
             t = (normalized_value - 0.2) / 0.1
             red = 255
-            green = 50 + int(100 * t)
-            blue = 0
+            green = 150 + int(60 * t)
+            blue = 50 + int(30 * t)
         elif normalized_value <= 0.4:
             # Medium-low confidence: Orange to yellow-orange
             t = (normalized_value - 0.3) / 0.1
             red = 255
-            green = 150 + int(80 * t)
-            blue = int(20 * t)
+            green = 210 + int(30 * t)
+            blue = 80 + int(40 * t)
         elif normalized_value <= 0.5:
             # Medium confidence: Yellow-orange to yellow
             t = (normalized_value - 0.4) / 0.1
             red = 255
-            green = 230 + int(25 * t)
-            blue = 20 + int(30 * t)
+            green = 240 + int(15 * t)
+            blue = 120 + int(50 * t)
         elif normalized_value <= 0.6:
             # Medium-high confidence: Yellow to yellow-green
             t = (normalized_value - 0.5) / 0.1
-            red = 255 - int(80 * t)
+            red = 255 - int(50 * t)
             green = 255
-            blue = 50 - int(50 * t)
+            blue = 170 - int(50 * t)
         elif normalized_value <= 0.7:
             # High-medium confidence: Yellow-green to light green
             t = (normalized_value - 0.6) / 0.1
-            red = 175 - int(100 * t)
+            red = 205 - int(80 * t)
             green = 255
-            blue = 0
+            blue = 120 - int(60 * t)
         elif normalized_value <= 0.8:
             # High confidence: Light green to medium green
             t = (normalized_value - 0.7) / 0.1
-            red = 75 - int(50 * t)
-            green = 255 - int(30 * t)
-            blue = 0
+            red = 125 - int(60 * t)
+            green = 255 - int(40 * t)
+            blue = 60 - int(40 * t)
         elif normalized_value <= 0.9:
-            # Very high confidence: Medium green to dark green
+            # Very high confidence: Medium green to bright green
             t = (normalized_value - 0.8) / 0.1
-            red = 25 - int(25 * t)
-            green = 225 - int(75 * t)
-            blue = 0
+            red = 65 - int(30 * t)
+            green = 215 - int(30 * t)
+            blue = 20 - int(10 * t)
         else:
-            # Extremely high confidence: Deep green
-            red = 0
-            green = 150
-            blue = 0
+            # Extremely high confidence: Bright green
+            red = 35
+            green = 185
+            blue = 10
         
         # Ensure RGB values are within valid range
         red = max(0, min(255, red))

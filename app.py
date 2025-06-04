@@ -55,16 +55,20 @@ st.markdown("""
         border-left: 4px solid #1f77b4;
     }
     .token-highlight {
-        display: inline-block;
-        margin: 2px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        display: inline;
+        margin: 0 1px;
+        padding: 1px 3px;
+        border-radius: 2px;
+        font-weight: normal;
+        white-space: pre;
+        transition: all 0.1s ease;
+        font-size: inherit;
+        line-height: inherit;
     }
     .token-highlight:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
     }
     .analysis-container {
         background-color: #f8f9fa;
