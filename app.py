@@ -105,7 +105,7 @@ def get_openai_client(api_key: str):
         return None
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_tokens=100, temperature=0.7):
+def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_tokens=100, temperature=0.7, top_p=1.0, frequency_penalty=0.0, presence_penalty=0.0, seed=None):
     """
     Get completion from OpenAI with logprobs enabled (cached version).
     
@@ -115,6 +115,10 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         model: Model to use for completion
         max_tokens: Maximum tokens to generate
         temperature: Sampling temperature
+        top_p: Nucleus sampling parameter
+        frequency_penalty: Frequency penalty parameter
+        presence_penalty: Presence penalty parameter
+        seed: Seed for deterministic generation
     
     Returns:
         Tuple of (OpenAI completion response with logprobs, error_message)
@@ -127,14 +131,24 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         
         client = OpenAI(api_key=api_key)
         
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
-            temperature=temperature,
-            logprobs=True,
-            top_logprobs=5  # Get top 5 alternatives for each token
-        )
+        # Build API call parameters
+        api_params = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "top_p": top_p,
+            "frequency_penalty": frequency_penalty,
+            "presence_penalty": presence_penalty,
+            "logprobs": True,
+            "top_logprobs": 5  # Get top 5 alternatives for each token
+        }
+        
+        # Add seed if provided
+        if seed is not None:
+            api_params["seed"] = int(seed)
+        
+        response = client.chat.completions.create(**api_params)
         return response, None
     except Exception as e:
         error_type = type(e).__name__
@@ -332,19 +346,21 @@ def main():
         
         st.divider()
         
-        # Model selection with descriptions
+        # Model selection with actual model names
         st.subheader("🎯 Model Selection")
-        model_info = {
-            "gpt-4o": "Latest GPT-4 Omni (Recommended)",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-            "gpt-4o-mini": "Faster, cost-effective version",
-            "gpt-4": "Previous generation GPT-4",
-            "gpt-3.5-turbo": "Fast and efficient"
-        }
+        models = [
+            "gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+            "gpt-4o-mini",
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-3.5-turbo",
+            "gpt-3.5-turbo-1106"
+        ]
         
         model = st.selectbox(
             "Model",
-            list(model_info.keys()),
-            format_func=lambda x: model_info[x],
+            models,
+            index=0,
             help="Select the OpenAI model for text generation."
         )
         
@@ -353,22 +369,61 @@ def main():
         # Generation parameters with manual controls
         st.subheader("🎛️ Generation Parameters")
         
-        temperature = st.slider(
-            "Temperature", 
-            min_value=0.0, 
-            max_value=2.0, 
-            value=0.7, 
-            step=0.1,
-            help="Controls creativity. Lower = more focused, Higher = more creative"
-        )
+        col1, col2 = st.columns(2)
         
-        max_tokens = st.slider(
-            "Max Tokens", 
-            min_value=10, 
-            max_value=300, 
-            value=100,
-            help="Maximum number of tokens to generate"
-        )
+        with col1:
+            temperature = st.slider(
+                "Temperature", 
+                min_value=0.0, 
+                max_value=2.0, 
+                value=0.7, 
+                step=0.1,
+                help="Controls creativity. Lower = more focused, Higher = more creative"
+            )
+            
+            top_p = st.slider(
+                "Top P", 
+                min_value=0.0, 
+                max_value=1.0, 
+                value=1.0, 
+                step=0.05,
+                help="Nucleus sampling. Lower values focus on more probable tokens"
+            )
+            
+            max_tokens = st.slider(
+                "Max Tokens", 
+                min_value=10, 
+                max_value=500, 
+                value=100,
+                help="Maximum number of tokens to generate"
+            )
+        
+        with col2:
+            frequency_penalty = st.slider(
+                "Frequency Penalty", 
+                min_value=-2.0, 
+                max_value=2.0, 
+                value=0.0, 
+                step=0.1,
+                help="Reduces repetition. Positive values decrease likelihood of repeated tokens"
+            )
+            
+            presence_penalty = st.slider(
+                "Presence Penalty", 
+                min_value=-2.0, 
+                max_value=2.0, 
+                value=0.0, 
+                step=0.1,
+                help="Encourages new topics. Positive values increase likelihood of new tokens"
+            )
+            
+            seed = st.number_input(
+                "Seed (optional)", 
+                min_value=0, 
+                max_value=999999, 
+                value=None,
+                help="Set for deterministic outputs. Leave empty for random generation"
+            )
         
         # Show parameter preset suggestions as info
         if temperature <= 0.4:
@@ -466,7 +521,11 @@ def main():
                 prompt,
                 model=model,
                 max_tokens=max_tokens,
-                temperature=temperature
+                temperature=temperature,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                seed=seed
             )
             
             progress_bar.empty()
@@ -479,6 +538,10 @@ def main():
                     "model": model,
                     "temperature": temperature,
                     "max_tokens": max_tokens,
+                    "top_p": top_p,
+                    "frequency_penalty": frequency_penalty,
+                    "presence_penalty": presence_penalty,
+                    "seed": seed,
                     "timestamp": datetime.now().isoformat()
                 }
                 
