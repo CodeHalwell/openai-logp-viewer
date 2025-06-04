@@ -184,10 +184,13 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
             if alt_tokens:
                 alternatives = f", Alternatives: {', '.join(repr(alt) for alt in alt_tokens)}"
         
+        # Escape HTML special characters in token string
+        escaped_token = token_str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+        
         html_parts.append(
             f'<span class="token-highlight" style="background-color: {color}; color: black;" '
             f'title="Token: {repr(token_str)}, Logprob: {token.logprob:.3f}, '
-            f'Probability: {probability_percent}%{alternatives}">{token_str}</span>'
+            f'Probability: {probability_percent}%{alternatives}">{escaped_token}</span>'
         )
     
     return "".join(html_parts)
@@ -395,62 +398,43 @@ def main():
             st.metric("Cached Items", cache_info.get("count", 0))
     
     # Main content area with improved layout
-    col1, col2 = st.columns([2, 1])
+    st.header("💭 Text Generation")
     
-    with col1:
-        st.header("💭 Text Generation")
-        
-        # Enhanced prompt input with examples
-        prompt_examples = [
-            "The future of artificial intelligence",
-            "Once upon a time in a distant galaxy",
-            "The key to solving climate change",
-            "In the year 2050, technology will",
-            "The most important lesson I learned"
-        ]
-        
-        selected_example = st.selectbox(
-            "Quick Examples (optional)",
-            [""] + prompt_examples,
-            help="Select an example or type your own prompt below"
-        )
-        
-        prompt = st.text_area(
-            "Enter your prompt:",
-            value=selected_example if selected_example else "The future of artificial intelligence",
-            height=120,
-            help="Start typing and the AI will complete your text"
-        )
-        
-        # Generation controls
-        col_gen1, col_gen2, col_gen3 = st.columns([2, 1, 1])
-        with col_gen1:
-            generate_button = st.button("🚀 Generate Text", type="primary", use_container_width=True)
-        with col_gen2:
-            if st.button("🎲 Random", help="Generate with random prompt"):
-                import random
-                prompt = random.choice(prompt_examples)
-                st.rerun()
-        with col_gen3:
-            if st.button("📋 Clear", help="Clear the prompt"):
-                prompt = ""
-                st.rerun()
+    # Enhanced prompt input with examples
+    prompt_examples = [
+        "The future of artificial intelligence",
+        "Once upon a time in a distant galaxy",
+        "The key to solving climate change",
+        "In the year 2050, technology will",
+        "The most important lesson I learned"
+    ]
     
-    with col2:
-        st.header("📊 Quick Stats")
-        if hasattr(st.session_state, 'response') and st.session_state.response:
-            response = st.session_state.response
-            
-            # Calculate and display key metrics
-            perplexity = stats_calculator.calculate_perplexity(response)
-            avg_confidence = stats_calculator.calculate_average_confidence(response)
-            uncertainty_score = stats_calculator.calculate_uncertainty_score(response)
-            
-            st.metric("Perplexity", f"{perplexity:.2f}" if perplexity else "N/A")
-            st.metric("Avg Confidence", f"{avg_confidence:.1f}%" if avg_confidence else "N/A")
-            st.metric("Uncertainty", f"{uncertainty_score:.2f}" if uncertainty_score else "N/A")
-        else:
-            st.info("Generate text to see statistics")
+    selected_example = st.selectbox(
+        "Quick Examples (optional)",
+        [""] + prompt_examples,
+        help="Select an example or type your own prompt below"
+    )
+    
+    prompt = st.text_area(
+        "Enter your prompt:",
+        value=selected_example if selected_example else "The future of artificial intelligence",
+        height=120,
+        help="Start typing and the AI will complete your text"
+    )
+    
+    # Generation controls
+    col_gen1, col_gen2, col_gen3 = st.columns([2, 1, 1])
+    with col_gen1:
+        generate_button = st.button("🚀 Generate Text", type="primary", use_container_width=True)
+    with col_gen2:
+        if st.button("🎲 Random", help="Generate with random prompt"):
+            import random
+            prompt = random.choice(prompt_examples)
+            st.rerun()
+    with col_gen3:
+        if st.button("📋 Clear", help="Clear the prompt"):
+            prompt = ""
+            st.rerun()
     
     # Generation and results
     if generate_button and prompt.strip():
