@@ -190,7 +190,7 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
         alternatives = ""
         if hasattr(token, 'top_logprobs') and token.top_logprobs:
             alt_tokens = [bytes(alt.bytes).decode("utf-8", errors="replace") 
-                         for alt in token.top_logprobs[:3] if alt.bytes != token.bytes]
+                         for alt in token.top_logprobs[:3] if alt.bytes is not None and alt.bytes != token.bytes]
             if alt_tokens:
                 alternatives = f", Alternatives: {', '.join(repr(alt) for alt in alt_tokens)}"
         
@@ -635,14 +635,15 @@ def main():
                         
                         alt_data = []
                         for j, alt in enumerate(token.top_logprobs):
-                            alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
-                            alt_prob = exp(alt.logprob) * 100
-                            alt_data.append({
-                                "Rank": j + 1,
-                                "Token": repr(alt_str),
-                                "Probability (%)": round(alt_prob, 2),
-                                "Logprob": round(alt.logprob, 4)
-                            })
+                            if alt.bytes is not None:
+                                alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                                alt_prob = exp(alt.logprob) * 100
+                                alt_data.append({
+                                    "Rank": j + 1,
+                                    "Token": repr(alt_str),
+                                    "Probability (%)": round(alt_prob, 2),
+                                    "Logprob": round(alt.logprob, 4)
+                                })
                         
                         alt_df = pd.DataFrame(alt_data)
                         st.dataframe(alt_df, use_container_width=True, hide_index=True)
