@@ -153,18 +153,21 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         return response, None
     except Exception as e:
         error_type = type(e).__name__
-        error_details = str(e)
         
-        error_message = f"Error calling OpenAI API: {error_type} - {error_details}"
+        # Limit error information disclosure for security
+        if "authentication" in str(e).lower() or "api_key" in str(e).lower():
+            error_details = "Authentication failed. Please check your API key."
+        elif "rate_limit" in str(e).lower():
+            error_details = "Rate limit exceeded. Please try again later."
+        elif "quota" in str(e).lower():
+            error_details = "API quota exceeded. Please check your OpenAI usage."
+        else:
+            error_details = "API request failed. Please try again."
         
-        # Return detailed error information for troubleshooting
+        # Return sanitized error information
         detailed_error = {
-            "error_type": error_type,
-            "error_details": error_details,
-            "model": model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "prompt_length": len(prompt)
+            "error_type": "APIError",
+            "error_details": error_details
         }
         
         return None, detailed_error
@@ -384,12 +387,18 @@ def main():
             "OpenAI API Key", 
             type="password",
             help="Enter your OpenAI API key from https://platform.openai.com/api-keys",
-            placeholder="sk-..."
+            placeholder="sk-...",
+            max_chars=200  # Prevent excessively long inputs
         )
         if not api_key:
             st.warning("⚠️ Please provide your OpenAI API key to continue.")
             st.stop()
         else:
+            # Basic format validation for API key
+            if not api_key.startswith("sk-") or len(api_key) < 20:
+                st.error("❌ Invalid API key format. OpenAI API keys start with 'sk-' and are longer.")
+                st.stop()
+            
             # Test the API key and store in session state
             try:
                 test_client = OpenAI(api_key=api_key)
@@ -397,7 +406,8 @@ def main():
                 st.success("✅ API Key Valid")
                 st.session_state.api_key = api_key
             except Exception as e:
-                st.error(f"❌ Invalid API key: {str(e)}")
+                # Reduce error information disclosure
+                st.error("❌ Invalid API key. Please check your key and try again.")
                 st.stop()
         
         st.divider()
@@ -476,7 +486,7 @@ def main():
             seed = st.number_input(
                 "Seed (optional)", 
                 min_value=0, 
-                max_value=999999, 
+                max_value=2147483647,  # Max 32-bit integer for better security
                 value=None,
                 help="Set for deterministic outputs. Leave empty for random generation"
             )
