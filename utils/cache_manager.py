@@ -1,16 +1,17 @@
 """
 Cache Manager for OpenAI Logprobs Application
-Handles caching strategies and cache management functionality.
+Handles caching strategies and cache management functionality with security measures.
 """
 
 import streamlit as st
 import hashlib
 import json
+import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 class CacheManager:
-    """Manages caching for OpenAI API responses and application state."""
+    """Manages caching for OpenAI API responses and application state with security measures."""
     
     def __init__(self):
         """Initialize cache manager."""
@@ -23,7 +24,7 @@ class CacheManager:
     
     def create_cache_key(self, prompt: str, model: str, temperature: float, max_tokens: int) -> str:
         """
-        Create a unique cache key for API requests.
+        Create a unique cache key for API requests without exposing sensitive data.
         
         Args:
             prompt: Input prompt text
@@ -34,11 +35,14 @@ class CacheManager:
         Returns:
             SHA256 hash as cache key
         """
+        # Add salt for additional security
+        salt = secrets.token_hex(8)
         cache_data = {
-            'prompt': prompt.strip(),
+            'prompt_hash': hashlib.sha256(prompt.strip().encode()).hexdigest()[:16],  # Hash the prompt for privacy
             'model': model,
             'temperature': temperature,
-            'max_tokens': max_tokens
+            'max_tokens': max_tokens,
+            'salt': salt
         }
         cache_string = json.dumps(cache_data, sort_keys=True)
         return hashlib.sha256(cache_string.encode()).hexdigest()[:16]
@@ -96,8 +100,11 @@ class CacheManager:
             del st.session_state.response_cache[oldest_key]
     
     def clear_cache(self) -> None:
-        """Clear all cached responses."""
+        """Clear all cached responses securely."""
         if hasattr(st.session_state, 'response_cache'):
+            # Overwrite cache data before deletion for security
+            for key in st.session_state.response_cache:
+                st.session_state.response_cache[key] = {"cleared": True}
             st.session_state.response_cache.clear()
         
         # Reset cache stats
@@ -106,6 +113,18 @@ class CacheManager:
             'misses': 0,
             'created': datetime.now().isoformat()
         }
+    
+    def secure_cleanup(self) -> None:
+        """Perform secure cleanup of all cache data."""
+        self.clear_cache()
+        
+        # Also clear any other potentially sensitive cached data
+        sensitive_keys = ['response_cache', 'cache_stats', 'api_responses']
+        for key in sensitive_keys:
+            if hasattr(st.session_state, key):
+                # Overwrite before deletion
+                setattr(st.session_state, key, {"cleared": True})
+                delattr(st.session_state, key)
     
     def get_cache_info(self) -> Dict[str, Any]:
         """

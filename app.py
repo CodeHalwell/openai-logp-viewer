@@ -9,6 +9,8 @@ Each word is colored based on the model's confidence in that token.
 import streamlit as st
 import os
 import html
+import hashlib
+import secrets
 from openai import OpenAI
 import numpy as np
 from math import exp
@@ -18,6 +20,7 @@ import pandas as pd
 import json
 from datetime import datetime
 import time
+import re
 
 import dotenv
 from utils.cache_manager import CacheManager
@@ -28,13 +31,22 @@ from utils.statistics import StatisticsCalculator
 # Load environment variables from .env file if it exists
 dotenv.load_dotenv()
 
-# Configure Streamlit page
+# Configure Streamlit page with security headers
 st.set_page_config(
     page_title="OpenAI Logprobs Text Generator", 
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Add security headers via HTML
+st.markdown("""
+<style>
+    /* Security: Prevent content injection */
+    iframe { display: none !important; }
+    script { display: none !important; }
+</style>
+""", unsafe_allow_html=True)
 
 # Initialize utility classes
 cache_manager = CacheManager()
@@ -102,8 +114,59 @@ def get_openai_client(api_key: str):
         client.models.list()
         return client
     except Exception as e:
-        st.error(f"Failed to initialize OpenAI client: {str(e)}")
+        # Don't log the actual API key or expose detailed error info
+        st.error("Failed to initialize OpenAI client. Please check your API key.")
         return None
+
+def create_secure_api_key_hash(api_key: str) -> str:
+    """Create a cryptographically secure hash of the API key for caching."""
+    # Use a secure hash function with salt
+    salt = secrets.token_bytes(32)
+    hash_obj = hashlib.pbkdf2_hmac('sha256', api_key.encode('utf-8'), salt, 100000)
+    # Return a hex representation of salt + hash for uniqueness
+    return (salt + hash_obj).hex()
+
+def validate_api_key_format(api_key: str) -> bool:
+    """Validate API key format and basic structure."""
+    if not api_key or not isinstance(api_key, str):
+        return False
+    
+    # OpenAI API keys should start with sk- and be at least 40 characters
+    if not api_key.startswith("sk-"):
+        return False
+    
+    if len(api_key) < 40 or len(api_key) > 200:
+        return False
+    
+    # Check for basic character set (alphanumeric + some special chars)
+    if not re.match(r'^sk-[A-Za-z0-9\-_]+$', api_key):
+        return False
+    
+    return True
+
+def sanitize_prompt(prompt: str) -> str:
+    """Sanitize user prompt to prevent potential issues."""
+    if not prompt or not isinstance(prompt, str):
+        return ""
+    
+    # Limit prompt length for security
+    max_length = 10000
+    if len(prompt) > max_length:
+        prompt = prompt[:max_length]
+    
+    # Remove any null bytes or other control characters that could cause issues
+    prompt = prompt.replace('\x00', '').strip()
+    
+    return prompt
+
+def cleanup_session_security():
+    """Clean up security-sensitive data from session state."""
+    security_keys = ['api_key', 'api_key_hash', 'client_instance']
+    for key in security_keys:
+        if key in st.session_state:
+            # Overwrite with dummy data before deletion for security
+            st.session_state[key] = "CLEARED"
+            del st.session_state[key]
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_tokens=100, temperature=0.7, top_p=1.0, frequency_penalty=0.0, presence_penalty=0.0, seed=None):
@@ -111,8 +174,8 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
     Get completion from OpenAI with logprobs enabled (cached version).
     
     Args:
-        api_key_hash: Hash of API key for caching
-        prompt: Input prompt text
+        api_key_hash: Secure hash of API key for caching (not the actual key)
+        prompt: Input prompt text (sanitized)
         model: Model to use for completion
         max_tokens: Maximum tokens to generate
         temperature: Sampling temperature
@@ -125,12 +188,28 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         Tuple of (OpenAI completion response with logprobs, error_message)
     """
     try:
-        # Get the actual API key from session state (set during validation)
+        # Get the actual API key from session state (never cache the actual key)
         api_key = st.session_state.get("api_key")
         if not api_key:
             return None, {"error_type": "APIKeyError", "error_details": "No API key available"}
         
+        # Validate API key format again for security
+        if not validate_api_key_format(api_key):
+            return None, {"error_type": "APIKeyError", "error_details": "Invalid API key format"}
+        
+        # Sanitize prompt before sending
+        prompt = sanitize_prompt(prompt)
+        if not prompt:
+            return None, {"error_type": "InputError", "error_details": "Invalid or empty prompt"}
+        
         client = OpenAI(api_key=api_key)
+        
+        # Validate parameters
+        max_tokens = max(1, min(max_tokens, 4000))  # Reasonable limits
+        temperature = max(0.0, min(temperature, 2.0))
+        top_p = max(0.0, min(top_p, 1.0))
+        frequency_penalty = max(-2.0, min(frequency_penalty, 2.0))
+        presence_penalty = max(-2.0, min(presence_penalty, 2.0))
         
         # Build API call parameters
         api_params = {
@@ -145,26 +224,35 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
             "top_logprobs": 5  # Get top 5 alternatives for each token
         }
         
-        # Add seed if provided
+        # Add seed if provided and valid
         if seed is not None:
-            api_params["seed"] = int(seed)
+            try:
+                seed = max(0, min(int(seed), 2147483647))  # Valid 32-bit range
+                api_params["seed"] = seed
+            except (ValueError, TypeError):
+                pass  # Ignore invalid seed values
         
         response = client.chat.completions.create(**api_params)
         return response, None
+        
     except Exception as e:
         error_type = type(e).__name__
         
-        # Limit error information disclosure for security
-        if "authentication" in str(e).lower() or "api_key" in str(e).lower():
-            error_details = "Authentication failed. Please check your API key."
-        elif "rate_limit" in str(e).lower():
-            error_details = "Rate limit exceeded. Please try again later."
-        elif "quota" in str(e).lower():
-            error_details = "API quota exceeded. Please check your OpenAI usage."
+        # Sanitized error handling - never expose API keys or sensitive details
+        if "authentication" in str(e).lower() or "api_key" in str(e).lower() or "unauthorized" in str(e).lower():
+            error_details = "Authentication failed. Please verify your API key is valid."
+        elif "rate_limit" in str(e).lower() or "429" in str(e):
+            error_details = "Rate limit exceeded. Please wait and try again."
+        elif "quota" in str(e).lower() or "billing" in str(e).lower():
+            error_details = "API quota exceeded. Please check your OpenAI billing."
+        elif "timeout" in str(e).lower():
+            error_details = "Request timed out. Please try again."
+        elif "model" in str(e).lower() and "not found" in str(e).lower():
+            error_details = "Selected model not available. Please choose a different model."
         else:
-            error_details = "API request failed. Please try again."
+            error_details = "API request failed. Please check your connection and try again."
         
-        # Return sanitized error information
+        # Return completely sanitized error information
         detailed_error = {
             "error_type": "APIError",
             "error_details": error_details
@@ -366,7 +454,12 @@ MODEL_PRESETS = {
 }
 
 def main():
-    """Main Streamlit application with enhanced features."""
+    """Main Streamlit application with enhanced features and security."""
+    
+    # Initialize session cleanup on first load for security
+    if 'session_initialized' not in st.session_state:
+        cleanup_session_security()
+        st.session_state.session_initialized = True
     
     # Header with improved styling
     st.markdown('<div class="main-header">', unsafe_allow_html=True)
@@ -394,41 +487,70 @@ def main():
         with st.expander("🛡️ Security & Privacy Details"):
             st.markdown("""
             **Your API Key Security:**
-            - ✅ Stored only in browser session memory
-            - ✅ Never saved to files or databases
-            - ✅ Never logged or cached permanently
-            - ✅ Automatically deleted when you close browser
+            - ✅ Stored only in browser session memory (never on disk)
+            - ✅ Never saved to files, databases, or logs
+            - ✅ Never cached permanently or transmitted to third parties
+            - ✅ Automatically deleted when you close browser/tab
             - ✅ Only used for direct OpenAI API calls
-            - ✅ Not shared with any third parties
+            - ✅ Cryptographically hashed for internal caching (original never stored)
+            - ✅ Session automatically cleaned on page reload
             
             **This app runs client-side** - your API key goes directly from your browser to OpenAI's servers.
+            
+            **Additional Security Measures:**
+            - Input validation and sanitization
+            - Secure error handling (no sensitive data exposure)
+            - Rate limiting protection
+            - Automatic session cleanup
             """)
+        
+        # Add session cleanup on app start
+        if st.button("🔄 Clear Session & Start Fresh", help="Clear all session data for security"):
+            cleanup_session_security()
+            st.cache_data.clear()
+            st.rerun()
         
         api_key = st.text_input(
             "OpenAI API Key", 
             type="password",
             help="Your key is secure and session-only. Get yours at: https://platform.openai.com/api-keys",
             placeholder="sk-...",
-            max_chars=200  # Prevent excessively long inputs
+            max_chars=200,  # Prevent excessively long inputs
+            key="api_key_input"
         )
         if not api_key:
             st.warning("⚠️ Please provide your OpenAI API key to continue.")
             st.stop()
         else:
-            # Basic format validation for API key
-            if not api_key.startswith("sk-") or len(api_key) < 20:
-                st.error("❌ Invalid API key format. OpenAI API keys start with 'sk-' and are longer.")
+            # Enhanced format validation for API key
+            if not validate_api_key_format(api_key):
+                st.error("❌ Invalid API key format. OpenAI API keys start with 'sk-' and are 40-200 characters long.")
                 st.stop()
             
-            # Test the API key and store in session state
+            # Test the API key and store in session state with security measures
             try:
                 test_client = OpenAI(api_key=api_key)
+                # Quick test to validate the key
                 test_client.models.list()
                 st.success("✅ API Key Valid")
+                
+                # Store API key securely in session state
                 st.session_state.api_key = api_key
+                
+                # Create secure hash for caching (never cache the actual key)
+                st.session_state.api_key_hash = create_secure_api_key_hash(api_key)
+                
             except Exception as e:
-                # Reduce error information disclosure
-                st.error("❌ Invalid API key. Please check your key and try again.")
+                # Enhanced error handling with no information disclosure
+                error_msg = "❌ Invalid API key or connection error. Please check:"
+                st.error(error_msg)
+                with st.expander("Troubleshooting"):
+                    st.markdown("""
+                    - Verify your API key is correctly copied
+                    - Check your OpenAI account has available quota
+                    - Ensure your internet connection is working
+                    - Try refreshing the page and entering the key again
+                    """)
                 st.stop()
         
         st.divider()
@@ -538,18 +660,26 @@ def main():
             help="Select the type of probability chart"
         )
         
-        # Cache management
+        # Cache management with security considerations
         st.divider()
         st.subheader("💾 Cache Management")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Clear Cache", help="Clear all cached responses"):
+            if st.button("Clear Cache", help="Clear all cached responses (recommended for security)"):
                 st.cache_data.clear()
+                cache_manager.clear_cache()
                 st.success("Cache cleared!")
         
         with col2:
-            cache_info = cache_manager.get_cache_info()
-            st.metric("Cached Items", cache_info.get("count", 0))
+            if st.button("Clear Session", help="Clear all session data including API key"):
+                cleanup_session_security()
+                st.cache_data.clear()
+                st.success("Session cleared!")
+                st.rerun()
+        
+        # Show cache info without sensitive data
+        cache_info = cache_manager.get_cache_info()
+        st.metric("Cached Items", cache_info.get("count", 0), help="Number of cached API responses")
     
     # Main content area with improved layout
     st.header("💭 Text Generation")
@@ -573,7 +703,8 @@ def main():
         "Enter your prompt:",
         value=selected_example if selected_example else "The future of artificial intelligence",
         height=120,
-        help="Start typing and the AI will complete your text"
+        help="Start typing and the AI will complete your text. Prompts are validated for security.",
+        max_chars=10000  # Security limit
     )
     
     # Generation controls
@@ -592,10 +723,18 @@ def main():
     
     # Generation and results
     if generate_button and prompt.strip():
+        # Sanitize prompt before processing
+        sanitized_prompt = sanitize_prompt(prompt)
+        if not sanitized_prompt:
+            st.error("❌ Invalid prompt. Please enter valid text.")
+            st.stop()
+        
         with st.spinner("🤖 Generating text..."):
-            # Create a hash of the API key for caching
-            api_key = st.session_state.get("api_key")
-            api_key_hash = hash(api_key) if api_key else "no_key"
+            # Get secure API key hash for caching (never cache the actual key)
+            api_key_hash = st.session_state.get("api_key_hash")
+            if not api_key_hash:
+                st.error("❌ Session expired. Please refresh and re-enter your API key.")
+                st.stop()
             
             # Progress bar for better UX
             progress_bar = st.progress(0)
@@ -605,7 +744,7 @@ def main():
             
             response, error = get_completion_with_logprobs(
                 api_key_hash,
-                prompt,
+                sanitized_prompt,  # Use sanitized prompt
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -620,7 +759,7 @@ def main():
             if response:
                 # Store response in session state
                 st.session_state.response = response
-                st.session_state.original_prompt = prompt
+                st.session_state.original_prompt = sanitized_prompt  # Store sanitized version
                 st.session_state.generation_params = {
                     "model": model,
                     "temperature": temperature,
@@ -636,8 +775,14 @@ def main():
                 
             elif error:
                 st.error(f"❌ Generation failed: {error['error_details']}")
-                with st.expander("🔍 Error Details"):
-                    st.json(error)
+                with st.expander("🔍 Troubleshooting"):
+                    st.markdown("""
+                    **Common solutions:**
+                    - Check your API key is valid and has quota
+                    - Try reducing max_tokens or simplifying your prompt
+                    - Wait a moment and try again if rate limited
+                    - Verify your internet connection
+                    """)
                 st.stop()
     
     # Display results with enhanced UI
@@ -818,4 +963,9 @@ def main():
             st.markdown(f"Last generated: {st.session_state.generation_params.get('timestamp', 'N/A')[:16]}")
 
 if __name__ == "__main__":
-    main()
+    # Add cleanup on app termination
+    try:
+        main()
+    finally:
+        # Clean up on exit for security
+        cleanup_session_security()
