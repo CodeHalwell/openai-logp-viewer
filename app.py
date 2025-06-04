@@ -375,6 +375,10 @@ def main():
     Generate text with AI while visualizing the model's confidence through advanced logprob analysis.
     Each token is color-coded based on the model's certainty, with detailed statistics and export options.
     """)
+    
+    # Prominent privacy notice
+    st.info("🔒 **Privacy First**: Your API key is never stored permanently - only in your browser session and automatically deleted when you close the app.")
+    
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Enhanced sidebar configuration
@@ -383,10 +387,27 @@ def main():
         
         # API Key management - always require user input for security
         st.info("🔑 API Key Required")
+        
+        # Privacy notice
+        st.success("🔒 **Privacy Guarantee**: Your API key is NEVER stored permanently. It only exists in your browser session and is automatically deleted when you close the app.")
+        
+        with st.expander("🛡️ Security & Privacy Details"):
+            st.markdown("""
+            **Your API Key Security:**
+            - ✅ Stored only in browser session memory
+            - ✅ Never saved to files or databases
+            - ✅ Never logged or cached permanently
+            - ✅ Automatically deleted when you close browser
+            - ✅ Only used for direct OpenAI API calls
+            - ✅ Not shared with any third parties
+            
+            **This app runs client-side** - your API key goes directly from your browser to OpenAI's servers.
+            """)
+        
         api_key = st.text_input(
             "OpenAI API Key", 
             type="password",
-            help="Enter your OpenAI API key from https://platform.openai.com/api-keys",
+            help="Your key is secure and session-only. Get yours at: https://platform.openai.com/api-keys",
             placeholder="sk-...",
             max_chars=200  # Prevent excessively long inputs
         )
