@@ -194,13 +194,15 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
             if alt_tokens:
                 alternatives = f", Alternatives: {', '.join(repr(alt) for alt in alt_tokens)}"
         
-        # Escape HTML special characters in token string
+        # Properly escape HTML special characters in token string and title
         escaped_token = token_str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+        escaped_repr = repr(token_str).replace('"', "&quot;")
+        escaped_alternatives = alternatives.replace('"', "&quot;")
         
         html_parts.append(
             f'<span class="token-highlight" style="background-color: {color}; color: black;" '
-            f'title="Token: {repr(token_str)}, Logprob: {token.logprob:.3f}, '
-            f'Probability: {probability_percent}%{alternatives}">{escaped_token}</span>'
+            f'title="Token: {escaped_repr}, Logprob: {token.logprob:.3f}, '
+            f'Probability: {probability_percent}%{escaped_alternatives}">{escaped_token}</span>'
         )
     
     return "".join(html_parts)
