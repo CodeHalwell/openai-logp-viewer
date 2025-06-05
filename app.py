@@ -211,10 +211,14 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         frequency_penalty = max(-2.0, min(frequency_penalty, 2.0))
         presence_penalty = max(-2.0, min(presence_penalty, 2.0))
         
-        # Build API call parameters
+        # Build API call parameters for text completion style
+        # Use a system message to instruct the model to continue the text
         api_params = {
             "model": model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [
+                {"role": "system", "content": "Continue the following text naturally. Do not respond conversationally, just continue writing where the text left off."},
+                {"role": "user", "content": prompt}
+            ],
             "max_tokens": max_tokens,
             "temperature": temperature,
             "top_p": top_p,
