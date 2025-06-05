@@ -795,19 +795,18 @@ def main():
         tab1, tab2, tab3 = st.tabs(["🎨 Highlighted View", "📄 Plain Text", "🔗 Combined"])
         
         with tab1:
-            st.markdown("**Confidence-Based Highlighting:**")
-            # Include original prompt in highlighted view
+            st.markdown("**Original Prompt:**")
             original_prompt = st.session_state.original_prompt
-            prompt_html = f'<span style="background-color: rgba(200, 200, 200, 0.3); padding: 1px 2px; border-radius: 2px;">{html.escape(original_prompt)}</span>'
+            st.markdown(f'<div style="background-color: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 14px; color: #666;">{html.escape(original_prompt)}</div>', unsafe_allow_html=True)
+            
+            st.markdown("**Confidence-Based Highlighting:**")
             highlighted_html = create_enhanced_highlighted_text(response, color_scheme)
-            combined_html = f"{prompt_html} {highlighted_html}"
-            st.markdown(f'<div class="analysis-container">{combined_html}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="analysis-container">{highlighted_html}</div>', unsafe_allow_html=True)
             
             st.markdown("**Top Choice Analysis:**")
             st.caption("Shows whether each token was the highest probability option available")
             top_choice_html = create_top_choice_analysis(response)
-            combined_top_choice = f"{prompt_html} {top_choice_html}"
-            st.markdown(f'<div class="analysis-container">{combined_top_choice}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="analysis-container">{top_choice_html}</div>', unsafe_allow_html=True)
         
         with tab2:
             completed_text = response.choices[0].message.content
@@ -912,9 +911,15 @@ def main():
                 alternatives = []
                 if hasattr(token, 'top_logprobs') and token.top_logprobs:
                     for alt in token.top_logprobs[:3]:
-                        alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
-                        alt_prob = exp(alt.logprob) * 100
-                        alternatives.append(f"{repr(alt_str)} ({alt_prob:.1f}%)")
+                        try:
+                            if hasattr(alt, 'bytes') and alt.bytes is not None:
+                                alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                            else:
+                                alt_str = str(alt.token) if hasattr(alt, 'token') else str(alt)
+                            alt_prob = exp(alt.logprob) * 100
+                            alternatives.append(f"{repr(alt_str)} ({alt_prob:.1f}%)")
+                        except (AttributeError, TypeError):
+                            continue
                 
                 token_data.append({
                     "Position": i + 1,
