@@ -117,7 +117,7 @@ def get_openai_client(api_key: str):
         return client
     except Exception as e:
         # Don't log the actual API key or expose detailed error info
-        st.error("Failed to initialize OpenAI client. Please check your API key.")
+        st.error("Failed to initialize OpenAI client. Please contact your administrator.")
         return None
 
 def create_secure_api_key_hash(api_key: str) -> str:
@@ -246,7 +246,7 @@ def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_token
         
         # Sanitized error handling - never expose API keys or sensitive details
         if "authentication" in str(e).lower() or "api_key" in str(e).lower() or "unauthorized" in str(e).lower():
-            error_details = "Authentication failed. Please verify your API key is valid."
+            error_details = "Authentication failed. Please contact your administrator."
         elif "rate_limit" in str(e).lower() or "429" in str(e):
             error_details = "Rate limit exceeded. Please wait and try again."
         elif "quota" in str(e).lower() or "billing" in str(e).lower():
@@ -492,7 +492,7 @@ def main():
     """)
     
     # Prominent privacy notice
-    st.info("🔒 **Privacy First**: Your API key is never stored permanently - only in your browser session and automatically deleted when you close the app.")
+    st.info("🔒 **Privacy First**: This app uses a secure, shared OpenAI API connection managed by the system administrator.")
     
     st.markdown('</div>', unsafe_allow_html=True)
     
@@ -500,24 +500,23 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # API Key management - always require user input for security
-        st.info("🔑 API Key Required")
+        # API connection status
+        st.info("🔑 OpenAI API Connected")
         
-        # Privacy notice
-        st.success("🔒 **Privacy Guarantee**: Your API key is NEVER stored permanently. It only exists in your browser session and is automatically deleted when you close the app.")
+        # Connection notice
+        st.success("🔒 **Secure Connection**: Using managed OpenAI API with built-in rate limiting and security protections.")
         
         with st.expander("🛡️ Security & Privacy Details"):
             st.markdown("""
-            **Your API Key Security:**
-            - ✅ Stored only in browser session memory (never on disk)
-            - ✅ Never saved to files, databases, or logs
-            - ✅ Never cached permanently or transmitted to third parties
-            - ✅ Automatically deleted when you close browser/tab
-            - ✅ Only used for direct OpenAI API calls
-            - ✅ Cryptographically hashed for internal caching (original never stored)
-            - ✅ Session automatically cleaned on page reload
+            **Secure API Management:**
+            - ✅ API keys stored securely in environment variables
+            - ✅ No user credentials required or stored
+            - ✅ All requests authenticated through secure server connection
+            - ✅ Rate limiting prevents abuse and ensures fair access
+            - ✅ Input validation and sanitization on all prompts
+            - ✅ Session data automatically cleaned on reload
             
-            **This app runs client-side** - your API key goes directly from your browser to OpenAI's servers.
+            **This app uses server-side API management** - all requests go through secure, rate-limited channels.
             
             **Additional Security Measures:**
             - Input validation and sanitization
@@ -564,12 +563,12 @@ def main():
                 with st.expander("Common Solutions"):
                     st.markdown("""
                     **If you see 'Incorrect API key':**
-                    - Your API key may be invalid or expired
-                    - Check if you copied the full key correctly
+                    - The API service may be temporarily unavailable
+                    - Contact administrator if the issue persists
                     
                     **If you see 'quota exceeded':**
-                    - Your OpenAI account is out of credits
-                    - Add billing information to your OpenAI account
+                    - The shared API quota has been reached
+                    - Try again later or contact administrator
                     
                     **If you see 'network' or 'connection' errors:**
                     - Check your internet connection
@@ -851,10 +850,11 @@ def main():
                 with st.expander("🔍 Troubleshooting"):
                     st.markdown("""
                     **Common solutions:**
-                    - Check your API key is valid and has quota
+                    - The API service may be temporarily unavailable
                     - Try reducing max_tokens or simplifying your prompt
                     - Wait a moment and try again if rate limited
-                    - Verify your internet connection
+                    - Check your internet connection
+                    - Contact administrator if issues persist
                     """)
                 st.stop()
     
