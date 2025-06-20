@@ -28,15 +28,164 @@ from utils.export_manager import ExportManager
 from utils.statistics import StatisticsCalculator
 from utils.rate_limiter import RateLimiter
 
-# Import functions from attached assets for compatibility
-from attached_assets.app import (
-    get_openai_client, validate_api_key_format, sanitize_prompt,
-    cleanup_session_security, get_completion_with_logprobs,
-    create_top_choice_analysis, create_enhanced_highlighted_text,
-    create_enhanced_logprob_chart
-)
+# Import functions directly - create local implementations
+import openai
+from openai import OpenAI
+import hashlib
+import secrets
 
 # Note: st.set_page_config() is only called in main app.py for multi-page apps
+
+# Local function implementations
+def validate_api_key_format(api_key: str) -> bool:
+    """Validate API key format."""
+    return api_key and api_key.startswith('sk-') and len(api_key) > 40
+
+def sanitize_prompt(prompt: str) -> str:
+    """Sanitize user prompt."""
+    if not prompt or not isinstance(prompt, str):
+        return ""
+    # Remove potential harmful content
+    sanitized = prompt.strip()
+    # Basic validation
+    if len(sanitized) > 10000:
+        sanitized = sanitized[:10000]
+    return sanitized
+
+def cleanup_session_security():
+    """Clean up security-sensitive data from session state."""
+    sensitive_keys = ['api_key', 'api_key_hash', 'response']
+    for key in sensitive_keys:
+        if key in st.session_state:
+            try:
+                del st.session_state[key]
+            except:
+                pass
+
+@st.cache_data(ttl=3600)
+def get_completion_with_logprobs(api_key_hash, prompt, model="gpt-4o", max_tokens=100, temperature=0.7, frequency_penalty=0.0, presence_penalty=0.0, seed=None):
+    """Get completion from OpenAI with logprobs enabled."""
+    try:
+        # Get API key from environment
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return None, {"error_details": "API key not configured"}
+        
+        client = OpenAI(api_key=api_key)
+        
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=temperature,
+            logprobs=True,
+            top_logprobs=5
+        )
+        
+        return response, None
+        
+    except Exception as e:
+        return None, {"error_details": f"Generation failed: {str(e)}"}
+
+def create_enhanced_highlighted_text(response, color_scheme="confidence"):
+    """Create HTML with highlighted text based on logprobs."""
+    try:
+        if not response or not hasattr(response, 'choices'):
+            return ""
+        
+        choice = response.choices[0]
+        if not hasattr(choice, 'logprobs') or not choice.logprobs:
+            return ""
+        
+        logprobs = choice.logprobs.content
+        if not logprobs:
+            return ""
+        
+        html_parts = []
+        for token in logprobs:
+            if token.logprob is not None:
+                # Convert logprob to confidence (0-100%)
+                confidence = min(100, max(0, exp(token.logprob) * 100))
+                
+                # Simple color mapping
+                if confidence >= 70:
+                    color = "rgba(34, 139, 34, 0.8)"  # Green
+                elif confidence >= 40:
+                    color = "rgba(255, 165, 0, 0.8)"  # Orange
+                else:
+                    color = "rgba(220, 20, 60, 0.8)"  # Red
+                
+                html_parts.append(f'<span style="background-color: {color}; padding: 2px 4px; margin: 1px; border-radius: 3px;">{html.escape(token.token)}</span>')
+        
+        return ''.join(html_parts)
+        
+    except Exception as e:
+        return ""
+
+def create_enhanced_logprob_chart(response, chart_type="bar"):
+    """Create enhanced charts showing logprob values."""
+    try:
+        if not response or not hasattr(response, 'choices'):
+            return None
+        
+        choice = response.choices[0]
+        if not hasattr(choice, 'logprobs') or not choice.logprobs:
+            return None
+        
+        logprobs = choice.logprobs.content
+        if not logprobs:
+            return None
+        
+        tokens = [token.token for token in logprobs if token.logprob is not None]
+        probabilities = [exp(token.logprob) * 100 for token in logprobs if token.logprob is not None]
+        
+        if chart_type == "bar":
+            fig = px.bar(
+                x=tokens[:20],  # Limit to first 20 tokens
+                y=probabilities[:20],
+                title="Token Confidence Levels",
+                labels={"x": "Tokens", "y": "Confidence (%)"}
+            )
+        else:
+            fig = px.line(
+                x=list(range(len(tokens[:20]))),
+                y=probabilities[:20],
+                title="Token Confidence Progression",
+                labels={"x": "Token Position", "y": "Confidence (%)"}
+            )
+        
+        return fig
+        
+    except Exception as e:
+        return None
+
+def create_top_choice_analysis(response):
+    """Create HTML showing top choice analysis."""
+    try:
+        if not response or not hasattr(response, 'choices'):
+            return ""
+        
+        choice = response.choices[0]
+        if not hasattr(choice, 'logprobs') or not choice.logprobs:
+            return ""
+        
+        logprobs = choice.logprobs.content
+        if not logprobs:
+            return ""
+        
+        html_parts = []
+        for token in logprobs:
+            if token.logprob is not None:
+                confidence = exp(token.logprob) * 100
+                is_top_choice = confidence >= 50  # Simple heuristic
+                
+                icon = "✅" if is_top_choice else "⚠️"
+                html_parts.append(f'{icon} <strong>{html.escape(token.token)}</strong> ({confidence:.1f}%)<br>')
+        
+        return ''.join(html_parts)
+        
+    except Exception as e:
+        return ""
 
 # Initialize utility classes
 cache_manager = CacheManager()

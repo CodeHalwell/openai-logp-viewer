@@ -1,4 +1,4 @@
-# OpenAI Logprobs Text Generator
+# CodeHalwell - OpenAI Logprobs Text Generator
 
 ## Overview
 
