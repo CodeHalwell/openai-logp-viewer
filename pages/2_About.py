@@ -5,12 +5,7 @@ OpenAI Logprobs Text Generator - CodeHelwell
 
 import streamlit as st
 
-# Configure page
-st.set_page_config(
-    page_title="About CodeHelwell",
-    page_icon="🏢",
-    layout="wide"
-)
+# Note: st.set_page_config() is only called in main app.py for multi-page apps
 
 def main():
     """Display the About CodeHelwell section."""

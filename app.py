@@ -1,13 +1,6 @@
-"""
-CodeHelwell - AI Text Generation Platform
-Homepage and main entry point for the multi-page application
-"""
-
 import streamlit as st
-import os
-from utils.rate_limiter import RateLimiter
 
-# Configure page
+# Configure page - must be the very first Streamlit command
 st.set_page_config(
     page_title="CodeHelwell - AI Text Generation",
     page_icon="🤖",
@@ -15,19 +8,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Add security headers and CSP via HTML
-st.markdown("""
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.openai.com;">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-Frame-Options" content="DENY">
-<meta http-equiv="X-XSS-Protection" content="1; mode=block">
-<style>
-    /* Security: Prevent content injection */
-    iframe { display: none !important; }
-    script[src] { display: none !important; }
-    object, embed, applet { display: none !important; }
-</style>
-""", unsafe_allow_html=True)
+"""
+CodeHelwell - AI Text Generation Platform
+Homepage and main entry point for the multi-page application
+"""
+
+import os
+from utils.rate_limiter import RateLimiter
+
+
 
 # Initialize rate limiter
 rate_limiter = RateLimiter()

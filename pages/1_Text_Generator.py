@@ -36,12 +36,7 @@ from app_old import (
     create_enhanced_logprob_chart
 )
 
-# Configure page
-st.set_page_config(
-    page_title="Text Generator - CodeHelwell",
-    page_icon="🤖",
-    layout="wide"
-)
+# Note: st.set_page_config() is only called in main app.py for multi-page apps
 
 # Initialize utility classes
 cache_manager = CacheManager()
