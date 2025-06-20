@@ -508,8 +508,17 @@ def main():
         cleanup_session_security()
         st.session_state.session_initialized = True
     
-    # Header with improved styling
+    # Header with logo and improved styling
     st.markdown('<div class="main-header">', unsafe_allow_html=True)
+    
+    # Display CodeHelwell logo
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        try:
+            st.image("assets/logo.png", width=250)
+        except:
+            st.markdown("**CodeHelwell**")
+    
     st.title("🤖 OpenAI Text Generation with Logprob Analysis")
     st.markdown("""
     Generate text with AI while visualizing the model's confidence through advanced logprob analysis.
