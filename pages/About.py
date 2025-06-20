@@ -10,11 +10,11 @@ import streamlit as st
 def main():
     """Display the About CodeHalwell section."""
     
-    # Header with logo
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Header with logo - smaller and centered
+    col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         try:
-            st.image("assets/logo.png", width=300)
+            st.image("assets/logo.png", width=200)
         except:
             st.markdown("**CodeHalwell**")
     
@@ -37,17 +37,7 @@ def main():
     - **Development**: REST API Development (FastAPI, Flask), Web Development fundamentals
     - **Cloud & MLOps**: AWS, GCP, Azure (personal use), Docker, CI/CD understanding
     
-    ### Professional Journey
-    
-    **Current Role: Senior Scientist at AstraZeneca (2021 - Present)**
-    - Leverage Python for task automation and developing predictive machine learning models
-    - Created a Generative AI troubleshooting chatbot using OpenAI with Streamlit interface
-    - Designed and deployed REST APIs using FastAPI to improve data accessibility
-    - Active member of AstraZeneca's internal Coding Network, mentoring and coaching others
-    
-    **Previous Experience:**
-    - **Analytical Specialist** at Sanofi/Recipharm (2016-2021)
-    - **Senior Quality Analyst** at Sanofi (2012-2016)
+
     
     ### Achievements & Recognition
     
@@ -57,7 +47,7 @@ def main():
     
     ### About This Application
     
-    This OpenAI Logprobs Text Generator represents the intersection of my professional expertise and passion for making AI accessible. As someone who regularly develops AI-powered applications at AstraZeneca, I wanted to create a tool that demonstrates:
+    This OpenAI Logprobs Text Generator represents the intersection of my professional expertise and passion for making AI accessible. I wanted to create a tool that demonstrates:
     
     - **Token-level Analysis**: Visualize exactly how confident AI models are in each generated word
     - **Real-time Insights**: Interactive exploration of model decision-making processes
@@ -122,7 +112,7 @@ def main():
     with col3:
         st.metric("Certifications", "4+", help="IBM AI, TensorFlow, Google Analytics, Docker")
     with col4:
-        st.metric("Current Role", "Senior Scientist", help="AstraZeneca, 2021-Present")
+        st.metric("Learning Platforms", "6+", help="Coursera, DataCamp, Codecademy, and more")
 
 if __name__ == "__main__":
     main()
