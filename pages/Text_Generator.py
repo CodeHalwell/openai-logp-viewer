@@ -1,6 +1,6 @@
 """
 Main Text Generation Page
-OpenAI Logprobs Text Generator - CodeHelwell
+OpenAI Logprobs Text Generator - CodeHalwell
 """
 
 import streamlit as st
@@ -28,8 +28,8 @@ from utils.export_manager import ExportManager
 from utils.statistics import StatisticsCalculator
 from utils.rate_limiter import RateLimiter
 
-# Import functions from main app (now in app_old.py)
-from app_old import (
+# Import functions from attached assets for compatibility
+from attached_assets.app import (
     get_openai_client, validate_api_key_format, sanitize_prompt,
     cleanup_session_security, get_completion_with_logprobs,
     create_top_choice_analysis, create_enhanced_highlighted_text,

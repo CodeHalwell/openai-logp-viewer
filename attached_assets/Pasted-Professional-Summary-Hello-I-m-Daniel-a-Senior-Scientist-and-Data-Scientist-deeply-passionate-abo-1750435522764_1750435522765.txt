@@ -1,0 +1,121 @@
+Professional Summary
+Hello! I'm Daniel, a Senior Scientist and Data Scientist deeply passionate about using advanced analytics, machine learning (ML), and artificial intelligence (AI) to tackle complex challenges and spark innovation. My journey into the world of data science is built upon a robust foundation of analytical problem-solving, a skill I initially developed and refined within the pharmaceutical industry. I find immense satisfaction in the process of transforming raw data into meaningful, actionable insights
+
+My core expertise lies in Python, and I'm adept with a wide array of its powerful libraries, including Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, TensorFlow, and PyTorch. I enjoy engaging with the entire data science lifecycle, from meticulously wrangling large datasets using SQL to constructing predictive models and architecting AI-powered applications. I'm particularly proud of achievements such as securing 4th place in a Kaggle Playground Series competition and developing an innovative troubleshooting chatbot leveraging OpenAI and Retrieval Augmented Generation (RAG).
+
+Beyond these specific projects, my experience extends to designing, developing, and deploying REST APIs with Python frameworks like FastAPI, significantly improving data accessibility and inter-system connectivity. As an enthusiastic member of AstraZeneca's internal Coding Network, I regularly share my work and find joy in mentoring and coaching others. Coding isn't just a skill for me; it's genuinely one of my favorite activities, and I am a strong advocate for lifelong learning. This drive pushes me to continually expand my horizons, evidenced by my certifications from IBM, Google, and DataCamp in fields like AI development, data analytics, and TensorFlow, as well as my active exploration of cybersecurity through platforms like Hack The Box and TryHackMe.
+
+I believe in the power of sharing knowledge and insights, which is why I regularly contribute articles on coding and data science to my Medium platform, "CodeHalwell". Whether it's automating intricate tasks, building sophisticated predictive models, or diving headfirst into emerging technologies, I am consistently driven by the intellectual challenge and the profound opportunity to make a tangible, positive impact.
+
+Skills & Expertise
+Machine Learning & AI
+Supervised & Unsupervised Learning
+Deep Learning (CNN, RNN, Transformers)
+Natural Language Processing
+Computer Vision
+Generative AI
+Reinforcement Learning
+Data Science
+Statistical Analysis
+Data Visualization
+Feature Engineering
+Exploratory Data Analysis
+Bayesian Optimisation
+Time Series Analysis
+Programming & Tools
+Python (NumPy, Pandas, Scikit-learn)
+PyTorch, TensorFlow, Keras
+SQL & NoSQL Databases
+Git & Version Control
+Docker
+Cloud Platforms (AWS, GCP, Azure - personal use)
+Software Development
+Web Development (Foundational knowledge of React, Next.js)
+API Development (FastAPI, Flask)
+TypeScript & JavaScript (Foundational knowledge)
+CI/CD Pipelines (Conceptual understanding, learning)
+Test-Driven Development (Conceptual understanding, learning)
+Agile Methodologies (Familiarity, e.g., Google Agile Essentials In Progress )
+MLOps
+Application Deployment: (Streamlit, Python REST APIs)
+Containerization: Docker
+Pipeline Automation
+Experiment Tracking Understanding
+Model Monitoring Understanding
+Model Versioning Understanding
+Soft Skills
+Problem Solving
+Technical Communication
+Project Management
+Stakeholder Management
+Team Collaboration
+Continuous Learning
+###
+Professional Experience
+Senior Scientist
+AstraZeneca
+•
+2021 – Present
+Leveraging Python for task automation, developing predictive machine learning models, and driving data science initiatives. Key projects include creating a Generative AI troubleshooting chatbot and developing REST APIs to enhance data connectivity.
+
+Key Achievements:
+Developed and implemented predictive models using machine learning (e.g., retention time prediction) to enhance departmental capabilities.
+Designed, developed, and deployed two key REST APIs (Physical Chemical Data API, Nitrite Database Data API) using FastAPI, improving data accessibility.
+Developed a gas chromatography troubleshooting chatbot using OpenAI with a Streamlit interface, demonstrating AI's potential to enhance workflows.
+Active member of the internal Coding Network, regularly presenting work and coaching others.
+Analytical Specialist
+Sanofi/Recipharm
+•
+2016 – 2021
+Provided technical support for analytical method transfer to cGMP standards and conducted statistical analysis for equivalency testing. Facilitated cross-functional investigations to resolve complex technical issues.
+
+Key Achievements:
+Provided technical support for analytical method transfer to cGMP standards.
+Conducted statistical analysis for equivalency testing using standard frequentist techniques.
+Facilitated large, cross-functional investigations using Practical Problem Solving (PPS) methodology.
+Reviewed technical documentation to ensure compliance and accuracy.
+Senior Quality Analyst
+Sanofi
+•
+2012 – 2016
+Focused on the analysis of nasal and aerosolized pharmaceutical products. Developed troubleshooting strategies for technical issues and played a key role in team planning and deputizing for the line manager.
+
+Key Achievements:
+Specialized in the analysis of nasal and aerosolized pharmaceutical products.
+Developed troubleshooting strategies for technical issues, methods, and out-of-specification/trend (OOS, OOT) results.
+Played a key role in planning team activities.
+Acted as a deputy for the line manager.
+Education & Certifications
+Education
+MChem in Chemistry
+Loughborough University | 2007 - 2012
+
+Certifications
+IBM AI Developer Professional Certificate
+IBM | 2024
+
+DeepLearning.AI TensorFlow Developer
+DeepLearning.AI | 2024
+
+Docker Foundations Professional Certificate
+Docker | 2025
+
+Google Data Analytics Professional Certificate
+Google | 2024
+
+Personal Interests
+Beyond my professional endeavors, I'm driven by a passion for lifelong learning and a variety of interests that keep me engaged and inspired:
+
+Continuous Learning & Technology: I'm enthusiastic about constantly expanding my knowledge, especially in coding, software development, data science, and Generative AI. I actively utilize a range of learning platforms to stay current, including:
+Coursera
+Zero To Mastery
+DataCamp
+Codecademy
+Udemy
+Zenva
+YouTube
+Additionally, I pursue personal development in cybersecurity through platforms like Hack The Box and TryHackMe, and I have a keen interest in science in general.
+Coding & Knowledge Sharing: As coding is one of my favorite activities, I enjoy working on personal projects. I also believe in sharing knowledge and contribute articles on coding to my Medium platform, "CodeHalwell", and share projects on GitHub.
+Sports Enthusiasm: I'm an avid follower of sports, with a particular interest in rugby, football, and Formula 1.
+Social Awareness & Values: I make it a point to stay informed about current political landscapes and hold a strong moral compass regarding inclusion and diversity.
+Relaxation & Entertainment: To unwind, I enjoy gaming and watching a diverse range of TV shows.
