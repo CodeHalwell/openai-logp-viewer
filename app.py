@@ -514,21 +514,21 @@ def main():
             st.cache_data.clear()
             st.rerun()
         
-        api_key = st.text_input(
-            "OpenAI API Key", 
-            type="password",
-            help="Your key is secure and session-only. Get yours at: https://platform.openai.com/api-keys",
-            placeholder="sk-...",
-            max_chars=200,  # Prevent excessively long inputs
-            key="api_key_input"
-        )
+        # Get API key from environment variable
+        api_key = os.getenv("OPENAI_API_KEY")
+        
         if not api_key:
-            st.warning("⚠️ Please provide your OpenAI API key to continue.")
+            st.error("❌ OpenAI API key not found in environment variables.")
+            st.info("The OPENAI_API_KEY environment variable needs to be set. Please check your secrets configuration.")
             st.stop()
         else:
+            # Show API key status (first 10 characters only for security)
+            st.info(f"🔑 Using API key: {api_key[:10]}...")
+            
             # Enhanced format validation for API key
             if not validate_api_key_format(api_key):
-                st.error("❌ Invalid API key format. OpenAI API keys start with 'sk-' and are 40-200 characters long.")
+                st.error("❌ Invalid API key format. OpenAI keys should start with 'sk-' and be 40-200 characters.")
+                st.info(f"Current key length: {len(api_key)}, starts with: {api_key[:5] if len(api_key) >= 5 else api_key}")
                 st.stop()
             
             # Test the API key and store in session state with security measures
@@ -536,7 +536,7 @@ def main():
                 test_client = OpenAI(api_key=api_key)
                 # Quick test to validate the key
                 test_client.models.list()
-                st.success("✅ API Key Valid")
+                st.success("✅ OpenAI API Connected Successfully")
                 
                 # Store API key securely in session state
                 st.session_state.api_key = api_key
@@ -545,15 +545,21 @@ def main():
                 st.session_state.api_key_hash = create_secure_api_key_hash(api_key)
                 
             except Exception as e:
-                # Enhanced error handling with no information disclosure
-                error_msg = "❌ Invalid API key or connection error. Please check:"
-                st.error(error_msg)
-                with st.expander("Troubleshooting"):
+                st.error("❌ Failed to connect to OpenAI API.")
+                st.error(f"Error details: {str(e)}")
+                with st.expander("Common Solutions"):
                     st.markdown("""
-                    - Verify your API key is correctly copied
-                    - Check your OpenAI account has available quota
-                    - Ensure your internet connection is working
-                    - Try refreshing the page and entering the key again
+                    **If you see 'Incorrect API key':**
+                    - Your API key may be invalid or expired
+                    - Check if you copied the full key correctly
+                    
+                    **If you see 'quota exceeded':**
+                    - Your OpenAI account is out of credits
+                    - Add billing information to your OpenAI account
+                    
+                    **If you see 'network' or 'connection' errors:**
+                    - Check your internet connection
+                    - OpenAI service may be temporarily unavailable
                     """)
                 st.stop()
         

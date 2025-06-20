@@ -106,6 +106,12 @@ This is a Streamlit-based web application that demonstrates text completion usin
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- June 20, 2025: Updated API key handling to use environment variables instead of manual input for improved security
+- June 20, 2025: Migrated from Replit Agent to standard Replit environment
+- June 20, 2025: Initial setup completed
+
 ## Changelog
 
 Changelog:
