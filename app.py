@@ -40,12 +40,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Add security headers via HTML
+# Add security headers and CSP via HTML
 st.markdown("""
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.openai.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-XSS-Protection" content="1; mode=block">
 <style>
     /* Security: Prevent content injection */
     iframe { display: none !important; }
-    script { display: none !important; }
+    script[src] { display: none !important; }
+    object, embed, applet { display: none !important; }
+    /* Allow only inline styles and scripts from streamlit */
 </style>
 """, unsafe_allow_html=True)
 
@@ -147,7 +153,7 @@ def validate_api_key_format(api_key: str) -> bool:
     return True
 
 def sanitize_prompt(prompt: str) -> str:
-    """Sanitize user prompt to prevent potential issues."""
+    """Sanitize user prompt to prevent potential security issues."""
     if not prompt or not isinstance(prompt, str):
         return ""
     
@@ -156,18 +162,37 @@ def sanitize_prompt(prompt: str) -> str:
     if len(prompt) > max_length:
         prompt = prompt[:max_length]
     
-    # Remove any null bytes or other control characters that could cause issues
-    prompt = prompt.replace('\x00', '').strip()
+    # Remove dangerous characters and control sequences
+    import string
+    # Remove null bytes and other control characters
+    prompt = ''.join(char for char in prompt if ord(char) >= 32 or char in ['\n', '\t'])
     
-    return prompt
+    # Remove potential script injection patterns
+    dangerous_patterns = [
+        '<script', '</script>', '<iframe', '</iframe>',
+        'javascript:', 'data:', 'vbscript:', 'onload=', 'onerror=',
+        '${', '#{', '<%', '%>', '{{', '}}'
+    ]
+    
+    prompt_lower = prompt.lower()
+    for pattern in dangerous_patterns:
+        if pattern in prompt_lower:
+            # Replace with safe equivalent
+            prompt = prompt.replace(pattern, '[FILTERED]')
+            prompt = prompt.replace(pattern.upper(), '[FILTERED]')
+            prompt = prompt.replace(pattern.capitalize(), '[FILTERED]')
+    
+    return prompt.strip()
 
 def cleanup_session_security():
     """Clean up security-sensitive data from session state."""
+    import secrets
     security_keys = ['api_key', 'api_key_hash', 'client_instance']
     for key in security_keys:
         if key in st.session_state:
-            # Overwrite with dummy data before deletion for security
-            st.session_state[key] = "CLEARED"
+            # Overwrite with random data multiple times for secure deletion
+            for _ in range(3):
+                st.session_state[key] = secrets.token_urlsafe(32)
             del st.session_state[key]
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -559,7 +584,10 @@ def main():
                 
             except Exception as e:
                 st.error("❌ Failed to connect to OpenAI API.")
-                st.error(f"Error details: {str(e)}")
+                # Log error securely without exposing details to user
+                import logging
+                logging.error(f"OpenAI API connection failed: {type(e).__name__}")
+                st.error("Connection error occurred. Please try again or contact administrator if the issue persists.")
                 with st.expander("Common Solutions"):
                     st.markdown("""
                     **If you see 'Incorrect API key':**

@@ -34,7 +34,7 @@ class RateLimiter:
         """Generate a unique client identifier based on session."""
         # Use session ID and some browser info for client identification
         session_info = f"{st.session_state.get('session_id', 'unknown')}"
-        return hashlib.md5(session_info.encode()).hexdigest()[:12]
+        return hashlib.sha256(session_info.encode()).hexdigest()[:16]
     
     def cleanup_old_records(self) -> None:
         """Remove old tracking records to prevent memory buildup."""
@@ -170,10 +170,24 @@ class RateLimiter:
         return int((midnight - now).total_seconds())
     
     def estimate_tokens(self, text: str) -> int:
-        """Estimate token count for text (rough approximation)."""
-        # Rough estimation: 1 token ≈ 4 characters for English text
-        # This is conservative to prevent overuse
-        return max(1, len(text) // 3)
+        """Estimate token count for text with improved accuracy."""
+        if not text:
+            return 0
+        
+        # More accurate token estimation based on OpenAI's patterns
+        # Split by common token boundaries
+        import re
+        
+        # Count words, punctuation, and special characters separately
+        words = re.findall(r'\b\w+\b', text)
+        punctuation = re.findall(r'[^\w\s]', text)
+        whitespace_chunks = re.findall(r'\s+', text)
+        
+        # Estimate: words ≈ 0.75 tokens, punctuation ≈ 1 token each, whitespace chunks ≈ 0.25 tokens
+        estimated_tokens = int(len(words) * 0.75 + len(punctuation) + len(whitespace_chunks) * 0.25)
+        
+        # Add 20% buffer for safety and account for subword tokenization
+        return max(1, int(estimated_tokens * 1.2))
     
     def check_and_record_request(self, prompt: str, max_tokens: int) -> Dict[str, Any]:
         """

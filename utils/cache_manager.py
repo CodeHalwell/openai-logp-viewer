@@ -35,17 +35,16 @@ class CacheManager:
         Returns:
             SHA256 hash as cache key
         """
-        # Add salt for additional security
-        salt = secrets.token_hex(8)
+        # Use deterministic but secure hashing (no random salt for caching consistency)
         cache_data = {
-            'prompt_hash': hashlib.sha256(prompt.strip().encode()).hexdigest()[:16],  # Hash the prompt for privacy
+            'prompt_hash': hashlib.sha256(prompt.strip().encode()).hexdigest()[:32],  # Hash the prompt for privacy
             'model': model,
-            'temperature': temperature,
+            'temperature': round(temperature, 2),  # Round for consistent caching
             'max_tokens': max_tokens,
-            'salt': salt
+            'version': '1.0'  # Version for cache invalidation if needed
         }
         cache_string = json.dumps(cache_data, sort_keys=True)
-        return hashlib.sha256(cache_string.encode()).hexdigest()[:16]
+        return hashlib.sha256(cache_string.encode()).hexdigest()[:24]
     
     def get_cached_response(self, cache_key: str) -> Optional[Dict[Any, Any]]:
         """
