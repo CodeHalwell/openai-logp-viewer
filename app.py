@@ -407,6 +407,9 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
     
     df = pd.DataFrame(data)
     
+    # Initialize fig variable to prevent unbound variable error
+    fig = None
+    
     if chart_type == "bar":
         fig = px.bar(
             df, 
@@ -439,6 +442,19 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
             color_continuous_scale="RdYlGn",
             text_auto=True
         )
+    else:
+        # Default fallback to bar chart
+        fig = px.bar(
+            df, 
+            x="Position", 
+            y="Probability (%)",
+            hover_data=["Token", "Logprob"],
+            title="Token Probabilities Distribution",
+            color="Probability (%)",
+            color_continuous_scale="RdYlGn",
+            text="Display_Token"
+        )
+        fig.update_traces(textposition="outside")
     
     fig.update_layout(
         xaxis_title="Token Position",
@@ -671,6 +687,23 @@ def main():
         # Rate limiting display
         st.divider()
         rate_limiter.display_rate_limit_info()
+        
+        # Security information
+        with st.expander("🔒 Security & Fair Use Policy"):
+            st.markdown("""
+            **This app implements the following protections:**
+            - **Rate Limiting**: 10 requests per minute maximum
+            - **Token Limits**: 2,000 tokens per minute, 50,000 per day
+            - **Request Size Limits**: Maximum 500 tokens per request
+            - **Secure API Key Handling**: Keys stored securely in environment
+            - **Input Validation**: All prompts are sanitized for security
+            
+            **Fair Use Guidelines:**
+            - This app uses free OpenAI tokens provided for demonstration
+            - Please use responsibly and avoid excessive requests
+            - Rate limits help ensure fair access for all users
+            - Large or commercial usage should use your own API key
+            """)
         
         # Cache management with security considerations
         st.divider()

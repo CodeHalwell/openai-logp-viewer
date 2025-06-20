@@ -108,6 +108,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- June 20, 2025: Implemented comprehensive rate limiting system to protect OpenAI tokens from abuse
+  - 10 requests per minute limit
+  - 2,000 tokens per minute limit  
+  - 50,000 tokens per day limit
+  - 500 tokens per request maximum
+- June 20, 2025: Removed API key display from UI for security (critical vulnerability fix)
 - June 20, 2025: Updated API key handling to use environment variables instead of manual input for improved security
 - June 20, 2025: Migrated from Replit Agent to standard Replit environment
 - June 20, 2025: Initial setup completed
