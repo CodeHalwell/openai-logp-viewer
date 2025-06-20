@@ -6,7 +6,7 @@ packages = ["glibcLocales", "libxcrypt", "pkg-config", "xsimd"]
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["streamlit", "run", "app.py", "--server.port", "5000"]
+run = ["sh", "-c", "streamlit run Home.py --server.port 5000"]
 
 [workflows]
 runButton = "Project"
