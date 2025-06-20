@@ -72,6 +72,7 @@ def main():
     
     This application is part of my broader CodeHalwell initiative, where I share knowledge through:
     
+    - **Website**: [codehalwell.io](https://codehalwell.io) - Central hub for all projects and content
     - **Medium Articles**: Technical tutorials and insights on data science and AI
     - **GitHub Projects**: Open-source implementations and code examples
     - **Interactive Demos**: Applications like this that make complex concepts accessible
@@ -100,6 +101,8 @@ def main():
     **Built with precision by Daniel | CodeHalwell**
     
     *Transforming data into insights, ideas into intelligent solutions*
+    
+    🌐 **Visit**: [codehalwell.io](https://codehalwell.io)
     """)
     
     # Professional metrics

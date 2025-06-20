@@ -19,13 +19,13 @@ def main():
     # Hero section with logo and branding
     st.markdown('<div class="main-header">', unsafe_allow_html=True)
 
-    # Display CodeHalwell logo prominently
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Display CodeHalwell logo centered
+    col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         try:
             st.image("assets/logo.png", width=200)
         except:
-            st.markdown("# **CodeHalwell**")
+            st.markdown("**CodeHalwell**")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -136,7 +136,8 @@ def main():
     ---
     <div style='text-align: center; color: #666; padding: 1rem 0;'>
         Built with precision by <strong>CodeHalwell</strong><br>
-        <em>Transforming ideas into intelligent solutions</em>
+        <em>Transforming ideas into intelligent solutions</em><br>
+        <a href="https://codehalwell.io" target="_blank" style="color: #0066cc; text-decoration: none;">🌐 codehalwell.io</a>
     </div>
     """,
                 unsafe_allow_html=True)
