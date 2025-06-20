@@ -59,7 +59,7 @@ def main():
         try:
             st.image("assets/logo.png", width=200)
         except:
-            st.markdown("**CodeHelwell**")
+            st.markdown("**CodeHalwell**")
     
     st.title("🤖 AI Text Generation with Confidence Analysis")
     

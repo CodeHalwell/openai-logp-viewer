@@ -1,6 +1,6 @@
 """
-About CodeHelwell Page
-OpenAI Logprobs Text Generator - CodeHelwell
+About CodeHalwell Page
+OpenAI Logprobs Text Generator - CodeHalwell
 """
 
 import streamlit as st
@@ -8,7 +8,7 @@ import streamlit as st
 # Note: st.set_page_config() is only called in main app.py for multi-page apps
 
 def main():
-    """Display the About CodeHelwell section."""
+    """Display the About CodeHalwell section."""
     
     # Header with logo
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -16,16 +16,16 @@ def main():
         try:
             st.image("assets/logo.png", width=300)
         except:
-            st.markdown("**CodeHelwell**")
+            st.markdown("**CodeHalwell**")
     
-    st.title("About CodeHelwell")
+    st.title("About CodeHalwell")
     
     st.markdown("""
-    ## Welcome to CodeHelwell
+    ## Welcome to CodeHalwell
     
     **Empowering Innovation Through AI and Technology Solutions**
     
-    CodeHelwell specializes in creating cutting-edge applications that demonstrate the power of artificial intelligence 
+    CodeHalwell specializes in creating cutting-edge applications that demonstrate the power of artificial intelligence 
     and modern software development. Our mission is to make advanced AI technologies accessible and understandable 
     through practical, real-world applications.
     
@@ -48,7 +48,7 @@ def main():
     
     ### Our Approach
     
-    At CodeHelwell, we believe in:
+    At CodeHalwell, we believe in:
     
     - **Transparency**: Making AI decisions visible and understandable
     - **Security**: Implementing robust security measures in all applications
@@ -68,7 +68,7 @@ def main():
     
     ### Get In Touch
     
-    Interested in working with CodeHelwell or learning more about our projects?
+    Interested in working with CodeHalwell or learning more about our projects?
     
     - **Explore**: Try out the Text Generator to see our work in action
     - **Connect**: Reach out to discuss potential collaborations
@@ -86,7 +86,7 @@ def main():
     
     ---
     
-    **Built with precision by CodeHelwell**
+    **Built with precision by CodeHalwell**
     
     *Transforming ideas into intelligent solutions*
     """)
