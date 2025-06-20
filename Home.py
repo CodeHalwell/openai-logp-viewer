@@ -20,10 +20,10 @@ def main():
     st.markdown('<div class="main-header">', unsafe_allow_html=True)
 
     # Display CodeHalwell logo prominently
-    col1, col2, col3 = st.columns([1, 3, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         try:
-            st.image("assets/logo.png", width=400)
+            st.image("assets/logo.png", width=200)
         except:
             st.markdown("# **CodeHalwell**")
 
