@@ -27,6 +27,7 @@ from utils.cache_manager import CacheManager
 from utils.color_schemes import ColorSchemeManager
 from utils.export_manager import ExportManager
 from utils.statistics import StatisticsCalculator
+from utils.rate_limiter import RateLimiter
 
 # Load environment variables from .env file if it exists
 dotenv.load_dotenv()
@@ -53,6 +54,7 @@ cache_manager = CacheManager()
 color_manager = ColorSchemeManager()
 export_manager = ExportManager()
 stats_calculator = StatisticsCalculator()
+rate_limiter = RateLimiter()
 
 # Custom CSS for better mobile responsiveness and UI
 st.markdown("""
@@ -522,13 +524,9 @@ def main():
             st.info("The OPENAI_API_KEY environment variable needs to be set. Please check your secrets configuration.")
             st.stop()
         else:
-            # Show API key status (first 10 characters only for security)
-            st.info(f"🔑 Using API key: {api_key[:10]}...")
-            
             # Enhanced format validation for API key
             if not validate_api_key_format(api_key):
                 st.error("❌ Invalid API key format. OpenAI keys should start with 'sk-' and be 40-200 characters.")
-                st.info(f"Current key length: {len(api_key)}, starts with: {api_key[:5] if len(api_key) >= 5 else api_key}")
                 st.stop()
             
             # Test the API key and store in session state with security measures
@@ -670,6 +668,10 @@ def main():
             help="Select the type of probability chart"
         )
         
+        # Rate limiting display
+        st.divider()
+        rate_limiter.display_rate_limit_info()
+        
         # Cache management with security considerations
         st.divider()
         st.subheader("💾 Cache Management")
@@ -739,11 +741,29 @@ def main():
             st.error("❌ Invalid prompt. Please enter valid text.")
             st.stop()
         
+        # Check rate limits before making API call
+        rate_check = rate_limiter.check_and_record_request(sanitized_prompt, max_tokens)
+        
+        if not rate_check["allowed"]:
+            if rate_check["reason"] == "request_rate":
+                st.error(f"🚨 Too many requests. Please wait {rate_check['reset_in']:.0f} seconds before trying again.")
+                st.info(f"Current: {rate_check['current']}/{rate_check['limit']} requests per minute")
+            elif rate_check["reason"] == "token_rate_minute":
+                st.error(f"🚨 Token limit exceeded. Please wait 60 seconds before trying again.")
+                st.info(f"Current: {rate_check['current']}/{rate_check['limit']} tokens per minute")
+            elif rate_check["reason"] == "token_rate_daily":
+                st.error(f"🚨 Daily token limit reached. Please try again tomorrow.")
+                st.info(f"Current: {rate_check['current']}/{rate_check['limit']} tokens per day")
+            elif rate_check["reason"] == "token_per_request":
+                st.error(f"🚨 Request too large. Maximum {rate_check['limit']} tokens per request.")
+                st.info(f"Your request: {rate_check['requested']} tokens (reduce max_tokens or prompt length)")
+            st.stop()
+        
         with st.spinner("🤖 Generating text..."):
             # Get secure API key hash for caching (never cache the actual key)
             api_key_hash = st.session_state.get("api_key_hash")
             if not api_key_hash:
-                st.error("❌ Session expired. Please refresh and re-enter your API key.")
+                st.error("❌ Session expired. Please refresh the page.")
                 st.stop()
             
             # Progress bar for better UX
@@ -767,6 +787,10 @@ def main():
             progress_bar.empty()
             
             if response:
+                # Record successful API usage for rate limiting
+                actual_tokens_used = rate_check.get("estimated_tokens", max_tokens)
+                rate_limiter.record_request(actual_tokens_used)
+                
                 # Store response in session state
                 st.session_state.response = response
                 st.session_state.original_prompt = sanitized_prompt  # Store sanitized version
@@ -782,6 +806,12 @@ def main():
                 }
                 
                 st.success("✅ Text generated successfully!")
+                
+                # Show token usage information
+                with st.expander("📊 Token Usage"):
+                    st.info(f"Estimated tokens used: {actual_tokens_used}")
+                    st.info(f"Input tokens: ~{rate_check.get('input_tokens', 0)}")
+                    st.info(f"Output tokens: ~{actual_tokens_used - rate_check.get('input_tokens', 0)}")
                 
             elif error:
                 st.error(f"❌ Generation failed: {error['error_details']}")
