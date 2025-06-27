@@ -723,64 +723,136 @@ def main():
 
         # Token details table
         st.subheader("🔍 Token Details")
-        st.write("Detailed information for each token:")
+        st.write("Interactive table with detailed information for each token:")
 
         # Create token details data
         token_data = []
         choice = response.choices[0]
-        if hasattr(choice,
-                   'logprobs') and choice.logprobs and choice.logprobs.content:
+        if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
             logprobs = choice.logprobs.content
             if logprobs:
                 for i, token in enumerate(logprobs):
                     if token.logprob is not None:
                         confidence = min(100, max(0, exp(token.logprob) * 100))
-
-                        # Get top alternatives
-                        alternatives = []
-                        if hasattr(token,
-                                   'top_logprobs') and token.top_logprobs:
-                            for alt in token.top_logprobs[:3]:
+                        
+                        # Get token string
+                        if hasattr(token, 'bytes') and token.bytes is not None:
+                            token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                        else:
+                            token_str = str(token.token) if hasattr(token, 'token') else str(token)
+                        
+                        # Get top alternatives with better formatting
+                        alt_1, alt_2, alt_3 = "—", "—", "—"
+                        alt_1_conf, alt_2_conf, alt_3_conf = "", "", ""
+                        
+                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                            for idx, alt in enumerate(token.top_logprobs[:3]):
+                                if hasattr(alt, 'bytes') and alt.bytes is not None:
+                                    alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                                else:
+                                    alt_str = str(alt.token) if hasattr(alt, 'token') else str(alt)
+                                
                                 alt_confidence = exp(alt.logprob) * 100
-                                alternatives.append(
-                                    f"{alt.token} ({alt_confidence:.1f}%)")
-
+                                
+                                if idx == 0:
+                                    alt_1 = f'"{alt_str}"'
+                                    alt_1_conf = f"{alt_confidence:.1f}%"
+                                elif idx == 1:
+                                    alt_2 = f'"{alt_str}"'
+                                    alt_2_conf = f"{alt_confidence:.1f}%"
+                                elif idx == 2:
+                                    alt_3 = f'"{alt_str}"'
+                                    alt_3_conf = f"{alt_confidence:.1f}%"
+                        
+                        # Determine confidence level
+                        if confidence >= 80:
+                            conf_level = "🟢 Very High"
+                        elif confidence >= 60:
+                            conf_level = "🟡 High"
+                        elif confidence >= 40:
+                            conf_level = "🟠 Medium"
+                        elif confidence >= 20:
+                            conf_level = "🔴 Low"
+                        else:
+                            conf_level = "⚫ Very Low"
+                        
                         token_data.append({
-                            "Position":
-                            i + 1,
-                            "Token":
-                            f'"{token.token}"',
-                            "Logprob":
-                            f"{token.logprob:.4f}",
-                            "Confidence":
-                            f"{confidence:.2f}%",
-                            "Top Alternatives":
-                            " | ".join(alternatives) if alternatives else "N/A"
+                            "Position": i + 1,
+                            "Token": f'"{token_str}"',
+                            "Logprob": round(token.logprob, 4),
+                            "Confidence %": round(confidence, 2),
+                            "Level": conf_level,
+                            "Alt 1": alt_1,
+                            "Alt 1 %": alt_1_conf,
+                            "Alt 2": alt_2,
+                            "Alt 2 %": alt_2_conf,
+                            "Alt 3": alt_3,
+                            "Alt 3 %": alt_3_conf
                         })
 
         if token_data:
-            # Display as interactive dataframe
+            # Search and filter functionality
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                search_term = st.text_input("🔍 Search tokens:", placeholder="Enter token text to search...")
+            with col2:
+                confidence_filter = st.selectbox("Filter by confidence:", 
+                                               ["All", "Very High (80%+)", "High (60-80%)", 
+                                                "Medium (40-60%)", "Low (20-40%)", "Very Low (<20%)"])
+            
+            # Filter data based on search and confidence
             df = pd.DataFrame(token_data)
-            st.dataframe(df,
-                         use_container_width=True,
-                         hide_index=True,
-                         column_config={
-                             "Position":
-                             st.column_config.NumberColumn("Pos",
-                                                           width="small"),
-                             "Token":
-                             st.column_config.TextColumn("Token",
-                                                         width="small"),
-                             "Logprob":
-                             st.column_config.TextColumn("Logprob",
-                                                         width="small"),
-                             "Confidence":
-                             st.column_config.TextColumn("Confidence",
-                                                         width="small"),
-                             "Top Alternatives":
-                             st.column_config.TextColumn("Top Alternatives",
-                                                         width="large")
-                         })
+            
+            if search_term:
+                mask = df['Token'].str.contains(search_term, case=False, na=False)
+                df = df[mask]
+            
+            if confidence_filter != "All":
+                if confidence_filter == "Very High (80%+)":
+                    df = df[df['Confidence %'] >= 80]
+                elif confidence_filter == "High (60-80%)":
+                    df = df[(df['Confidence %'] >= 60) & (df['Confidence %'] < 80)]
+                elif confidence_filter == "Medium (40-60%)":
+                    df = df[(df['Confidence %'] >= 40) & (df['Confidence %'] < 60)]
+                elif confidence_filter == "Low (20-40%)":
+                    df = df[(df['Confidence %'] >= 20) & (df['Confidence %'] < 40)]
+                elif confidence_filter == "Very Low (<20%)":
+                    df = df[df['Confidence %'] < 20]
+            
+            # Display results count
+            if search_term or confidence_filter != "All":
+                st.info(f"Showing {len(df)} of {len(token_data)} tokens")
+            
+            # Display enhanced interactive dataframe
+            st.dataframe(
+                df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Position": st.column_config.NumberColumn("Pos", width="small"),
+                    "Token": st.column_config.TextColumn("Token", width="medium"),
+                    "Logprob": st.column_config.NumberColumn("Logprob", width="small", format="%.4f"),
+                    "Confidence %": st.column_config.NumberColumn("Conf %", width="small", format="%.2f"),
+                    "Level": st.column_config.TextColumn("Level", width="medium"),
+                    "Alt 1": st.column_config.TextColumn("Alternative 1", width="medium"),
+                    "Alt 1 %": st.column_config.TextColumn("Conf %", width="small"),
+                    "Alt 2": st.column_config.TextColumn("Alternative 2", width="medium"),
+                    "Alt 2 %": st.column_config.TextColumn("Conf %", width="small"),
+                    "Alt 3": st.column_config.TextColumn("Alternative 3", width="medium"),
+                    "Alt 3 %": st.column_config.TextColumn("Conf %", width="small")
+                },
+                height=400
+            )
+            
+            # Export functionality
+            if st.button("📥 Export to CSV"):
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name=f"token_details_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
 
         # Statistics
         st.subheader("📊 Statistical Analysis")
