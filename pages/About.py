@@ -12,13 +12,14 @@ def main():
     
     st.title("About Daniel & CodeHalwell")
     
-    # Header with logo below title - smaller and centered
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
+    # Sidebar with logo
+    with st.sidebar:
         try:
-            st.image("assets/logo.png", width=120)
+            st.image("assets/logo.png", use_column_width=True)
         except:
             st.markdown("**CodeHalwell**")
+        
+        st.divider()
     
     st.markdown("""
     ## Hello! I'm Daniel

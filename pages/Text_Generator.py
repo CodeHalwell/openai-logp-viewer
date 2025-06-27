@@ -204,13 +204,7 @@ def main():
     
     st.title("🤖 AI Text Generation with Confidence Analysis")
     
-    # Header with logo below title
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
-        try:
-            st.image("assets/logo.png", width=120)
-        except:
-            st.markdown("**CodeHalwell**")
+
     
     # Show loading indicator on first page load
     if 'page_loaded' not in st.session_state:
@@ -257,6 +251,13 @@ def main():
     
     # Sidebar configuration
     with st.sidebar:
+        try:
+            st.image("assets/logo.png", use_column_width=True)
+        except:
+            st.markdown("**CodeHalwell**")
+        
+        st.divider()
+        
         st.header("⚙️ Configuration")
         st.success("🔗 Connected to OpenAI API")
         

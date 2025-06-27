@@ -31,15 +31,16 @@ def main():
     """,
                 unsafe_allow_html=True)
 
-    # Display CodeHalwell logo centered below title
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Sidebar with logo
+    with st.sidebar:
         try:
-            st.image("assets/logo.png", width=120)
+            st.image("assets/logo.png", use_column_width=True)
         except:
             st.markdown("**CodeHalwell**")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.divider()
 
     # Feature highlights
     col1, col2, col3 = st.columns(3)
