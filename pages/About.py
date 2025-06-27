@@ -7,20 +7,21 @@ import streamlit as st
 
 # Note: st.set_page_config() is only called in main app.py for multi-page apps
 
+
 def main():
     """Display the About CodeHalwell section."""
-    
+
     st.title("About Daniel & CodeHalwell")
-    
+
     # Sidebar with logo
     with st.sidebar:
         try:
-            st.image("assets/logo.png", use_column_width=True)
+            st.image("assets/logo.png", use_container_width=True)
         except:
             st.markdown("**CodeHalwell**")
-        
+
         st.divider()
-    
+
     st.markdown("""
     ## Hello! I'm Daniel
     
@@ -105,18 +106,27 @@ def main():
     
     🌐 **Visit**: [codehalwell.io](https://codehalwell.io)
     """)
-    
+
     # Professional metrics
     st.markdown("---")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Years Experience", "12+", help="Professional experience since 2012")
+        st.metric("Years Experience",
+                  "12+",
+                  help="Professional experience since 2012")
     with col2:
-        st.metric("Kaggle Ranking", "4th Place", help="Kaggle Playground Series competition")
+        st.metric("Kaggle Ranking",
+                  "4th Place",
+                  help="Kaggle Playground Series competition")
     with col3:
-        st.metric("Certifications", "4+", help="IBM AI, TensorFlow, Google Analytics, Docker")
+        st.metric("Certifications",
+                  "4+",
+                  help="IBM AI, TensorFlow, Google Analytics, Docker")
     with col4:
-        st.metric("Learning Platforms", "6+", help="Coursera, DataCamp, Codecademy, and more")
+        st.metric("Learning Platforms",
+                  "6+",
+                  help="Coursera, DataCamp, Codecademy, and more")
+
 
 if __name__ == "__main__":
     main()

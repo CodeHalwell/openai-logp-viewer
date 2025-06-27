@@ -36,10 +36,10 @@ def main():
     # Sidebar with logo
     with st.sidebar:
         try:
-            st.image("assets/logo.png", use_column_width=True)
+            st.image("assets/logo.png", use_container_width=True)
         except:
             st.markdown("**CodeHalwell**")
-        
+
         st.divider()
 
     # Feature highlights
