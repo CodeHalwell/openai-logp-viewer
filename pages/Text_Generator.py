@@ -170,7 +170,7 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
         return ""
 
 
-def create_enhanced_logprob_chart(response, chart_type="bar"):
+def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
     """Create enhanced charts showing logprob values with multiple visualization options."""
     try:
         if not response or not hasattr(response, 'choices'):
@@ -201,8 +201,7 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
                 probabilities.append(exp(token.logprob) * 100)
                 positions.append(i + 1)
 
-        # Limit to reasonable number for visualization
-        max_tokens = 30
+        # Limit to user-specified number for visualization
         tokens = tokens[:max_tokens]
         probabilities = probabilities[:max_tokens]
         positions = positions[:max_tokens]
@@ -533,6 +532,8 @@ def main():
                                     ["confidence", "rainbow", "heat", "ocean"])
         chart_type = st.selectbox("Chart Type", 
                                  ["bar", "line", "scatter", "box"])
+        max_tokens_display = st.slider("Tokens to Display", 5, 50, 20, 1,
+                                      help="Number of tokens to show in charts")
 
     # Main content
     st.header("💭 Text Generation")
@@ -704,7 +705,7 @@ def main():
 
         # Probability Chart
         st.subheader("📈 Probability Chart")
-        fig = create_enhanced_logprob_chart(response, chart_type)
+        fig = create_enhanced_logprob_chart(response, chart_type, max_tokens_display)
         if fig:
             st.plotly_chart(fig, use_container_width=True)
 
