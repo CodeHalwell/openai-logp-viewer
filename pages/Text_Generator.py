@@ -217,7 +217,7 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
 
 
 def create_top_choice_analysis(response):
-    """Create HTML showing top choice analysis."""
+    """Create HTML showing top choice analysis in paragraph style with color coding."""
     try:
         if not response or not hasattr(response, 'choices'):
             return ""
@@ -233,13 +233,36 @@ def create_top_choice_analysis(response):
         html_parts = []
         for token in logprobs:
             if token.logprob is not None:
-                confidence = exp(token.logprob) * 100
-                is_top_choice = confidence >= 50  # Simple heuristic
-
-                icon = "✅" if is_top_choice else "⚠️"
-                html_parts.append(
-                    f'{icon} <strong>{html.escape(token.token)}</strong> ({confidence:.1f}%)<br>'
-                )
+                # Get token string
+                if hasattr(token, 'bytes') and token.bytes is not None:
+                    token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                else:
+                    token_str = str(token.token) if hasattr(token, 'token') else str(token)
+                
+                # Check if this was the top choice by examining top_logprobs
+                was_top_choice = True
+                if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                    current_logprob = token.logprob
+                    for alt_token in token.top_logprobs:
+                        if alt_token.logprob > current_logprob:
+                            was_top_choice = False
+                            break
+                
+                # Calculate probability percentage
+                probability = exp(token.logprob) * 100
+                
+                # Create styling based on whether it was top choice
+                if was_top_choice:
+                    # Green background for top choice
+                    style = "background-color: rgba(144, 238, 144, 0.6); padding: 2px 4px; margin: 1px; border-radius: 3px;"
+                else:
+                    # Orange background for not top choice
+                    style = "background-color: rgba(255, 165, 0, 0.6); padding: 2px 4px; margin: 1px; border-radius: 3px;"
+                
+                # Escape HTML characters
+                escaped_token = html.escape(token_str)
+                
+                html_parts.append(f'<span style="{style}">{escaped_token}</span>')
 
         return ''.join(html_parts)
 
@@ -513,66 +536,63 @@ def main():
             </style>
             """, unsafe_allow_html=True)
             st.markdown(f'<div class="analysis-container">{highlighted_html}</div>', unsafe_allow_html=True)
-            
-            # Token details table
-            st.subheader("🔍 Token Details")
-            st.write("Detailed information for each token:")
-            
-            # Create token details data
-            token_data = []
-            choice = response.choices[0]
-            if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
-                logprobs = choice.logprobs.content
-                if logprobs:
-                    for i, token in enumerate(logprobs):
-                        if token.logprob is not None:
-                            confidence = min(100, max(0, exp(token.logprob) * 100))
-                            
-                            # Get top alternatives
-                            alternatives = []
-                            if hasattr(token, 'top_logprobs') and token.top_logprobs:
-                                for alt in token.top_logprobs[:3]:
-                                    alt_confidence = exp(alt.logprob) * 100
-                                    alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
-                            
-                            token_data.append({
-                                "Position": i + 1,
-                                "Token": f'"{token.token}"',
-                                "Logprob": f"{token.logprob:.4f}",
-                                "Confidence": f"{confidence:.2f}%",
-                                "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
-                            })
-            
-            if token_data:
-                # Display as interactive dataframe
-                df = pd.DataFrame(token_data)
-                st.dataframe(
-                    df,
-                    use_container_width=True,
-                    hide_index=True,
-                    column_config={
-                        "Position": st.column_config.NumberColumn("Pos", width="small"),
-                        "Token": st.column_config.TextColumn("Token", width="small"),
-                        "Logprob": st.column_config.TextColumn("Logprob", width="small"),
-                        "Confidence": st.column_config.TextColumn("Confidence", width="small"),
-                        "Top Alternatives": st.column_config.TextColumn("Top Alternatives", width="large")
-                    }
-                )
 
-        # Charts and analysis
-        col1, col2 = st.columns(2)
+        # Top Choice Analysis
+        st.subheader("🎯 Top Choice Analysis")
+        top_choice_html = create_top_choice_analysis(response)
+        if top_choice_html:
+            st.markdown(f'<div class="analysis-container">{top_choice_html}</div>', unsafe_allow_html=True)
 
-        with col1:
-            st.subheader("📈 Probability Chart")
-            fig = create_enhanced_logprob_chart(response, chart_type)
-            if fig:
-                st.plotly_chart(fig, use_container_width=True)
+        # Probability Chart
+        st.subheader("📈 Probability Chart")
+        fig = create_enhanced_logprob_chart(response, chart_type)
+        if fig:
+            st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
-            st.subheader("🎯 Top Choice Analysis")
-            top_choice_html = create_top_choice_analysis(response)
-            if top_choice_html:
-                st.markdown(top_choice_html, unsafe_allow_html=True)
+        # Token details table
+        st.subheader("🔍 Token Details")
+        st.write("Detailed information for each token:")
+        
+        # Create token details data
+        token_data = []
+        choice = response.choices[0]
+        if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
+            logprobs = choice.logprobs.content
+            if logprobs:
+                for i, token in enumerate(logprobs):
+                    if token.logprob is not None:
+                        confidence = min(100, max(0, exp(token.logprob) * 100))
+                        
+                        # Get top alternatives
+                        alternatives = []
+                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                            for alt in token.top_logprobs[:3]:
+                                alt_confidence = exp(alt.logprob) * 100
+                                alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
+                        
+                        token_data.append({
+                            "Position": i + 1,
+                            "Token": f'"{token.token}"',
+                            "Logprob": f"{token.logprob:.4f}",
+                            "Confidence": f"{confidence:.2f}%",
+                            "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
+                        })
+        
+        if token_data:
+            # Display as interactive dataframe
+            df = pd.DataFrame(token_data)
+            st.dataframe(
+                df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Position": st.column_config.NumberColumn("Pos", width="small"),
+                    "Token": st.column_config.TextColumn("Token", width="small"),
+                    "Logprob": st.column_config.TextColumn("Logprob", width="small"),
+                    "Confidence": st.column_config.TextColumn("Confidence", width="small"),
+                    "Top Alternatives": st.column_config.TextColumn("Top Alternatives", width="large")
+                }
+            )
 
         # Statistics
         st.subheader("📊 Statistical Analysis")
