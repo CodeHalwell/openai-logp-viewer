@@ -39,7 +39,7 @@ import secrets
 # Local function implementations
 def validate_api_key_format(api_key: str) -> bool:
     """Validate API key format."""
-    return api_key and api_key.startswith('sk-') and len(api_key) > 40
+    return bool(api_key and api_key.startswith('sk-') and len(api_key) > 40)
 
 def sanitize_prompt(prompt: str) -> str:
     """Sanitize user prompt."""
@@ -202,15 +202,47 @@ def main():
         cleanup_session_security()
         st.session_state.session_initialized = True
     
-    # Header with logo
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Header with smaller logo
+    col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         try:
-            st.image("assets/logo.png", width=200)
+            st.image("assets/logo.png", width=120)
         except:
             st.markdown("**CodeHalwell**")
     
     st.title("🤖 AI Text Generation with Confidence Analysis")
+    
+    # Show loading indicator on first page load
+    if 'page_loaded' not in st.session_state:
+        # Create loading placeholder
+        loading_placeholder = st.empty()
+        with loading_placeholder.container():
+            col1, col2, col3 = st.columns([2, 1, 2])
+            with col2:
+                try:
+                    st.image("assets/logo.png", width=120)
+                except:
+                    st.markdown("**CodeHalwell**")
+            st.markdown("""
+                <div style='text-align: center; margin: 20px 0;'>
+                    <div style='display: inline-block; animation: spin 2s linear infinite;'>
+                        🔄
+                    </div>
+                    <p style='color: #666; margin-top: 10px;'>Confirming connection to OpenAI with API Key...</p>
+                </div>
+                <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                </style>
+            """, unsafe_allow_html=True)
+        
+        # Simulate loading time
+        time.sleep(2)
+        loading_placeholder.empty()
+        st.session_state.page_loaded = True
+        st.rerun()
     
     # Check API connection
     api_key = os.getenv("OPENAI_API_KEY")
@@ -235,7 +267,7 @@ def main():
         
         # Model selection
         st.subheader("🎯 Model Selection")
-        models = ["gpt-4o", "gpt-4o-mini", "gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"]
+        models = ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"]
         model = st.selectbox("Model", models, index=0)
         
         # Generation parameters
@@ -311,32 +343,51 @@ def main():
                 st.error(f"Request too large. Maximum {rate_check['limit']} tokens per request.")
             return
         
-        with st.spinner("Generating text..."):
-            response, error = get_completion_with_logprobs(
-                st.session_state.api_key_hash,
-                sanitized_prompt,
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty
-            )
+        # Show loading indicator during generation
+        generation_placeholder = st.empty()
+        with generation_placeholder.container():
+            st.markdown("""
+                <div style='text-align: center; margin: 20px 0;'>
+                    <div style='display: inline-block; animation: spin 2s linear infinite;'>
+                        🔄
+                    </div>
+                    <p style='color: #666; margin-top: 10px;'>Generating text with OpenAI...</p>
+                </div>
+                <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                </style>
+            """, unsafe_allow_html=True)
+        
+        response, error = get_completion_with_logprobs(
+            st.session_state.api_key_hash,
+            sanitized_prompt,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty
+        )
+        
+        generation_placeholder.empty()
+        
+        if response:
+            # Record usage
+            actual_tokens_used = rate_check.get("estimated_tokens", max_tokens)
+            rate_limiter.record_request(actual_tokens_used)
             
-            if response:
-                # Record usage
-                actual_tokens_used = rate_check.get("estimated_tokens", max_tokens)
-                rate_limiter.record_request(actual_tokens_used)
-                
-                # Store response
-                st.session_state.response = response
-                st.session_state.original_prompt = sanitized_prompt
-                
-                st.success("Text generated successfully!")
-                
-                with st.expander("📊 Token Usage"):
-                    st.info(f"Estimated tokens used: {actual_tokens_used}")
-                
-            elif error:
+            # Store response
+            st.session_state.response = response
+            st.session_state.original_prompt = sanitized_prompt
+            
+            st.success("Text generated successfully!")
+            
+            with st.expander("📊 Token Usage"):
+                st.info(f"Estimated tokens used: {actual_tokens_used}")
+        
+        elif error:
                 st.error(f"Generation failed: {error['error_details']}")
     
     # Display results
