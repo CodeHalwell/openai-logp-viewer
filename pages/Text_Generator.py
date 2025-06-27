@@ -102,7 +102,7 @@ def get_completion_with_logprobs(api_key_hash,
 
 
 def create_enhanced_highlighted_text(response, color_scheme="confidence"):
-    """Create simple highlighted text and return token details separately."""
+    """Create HTML with enhanced highlighted text based on logprobs with hover tooltips."""
     try:
         if not response or not hasattr(response, 'choices'):
             return ""
@@ -111,29 +111,59 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
         if not hasattr(choice, 'logprobs') or not choice.logprobs:
             return ""
 
-        logprobs = choice.logprobs.content
-        if not logprobs:
+        tokens = choice.logprobs.content
+        if not tokens:
             return ""
 
         html_parts = []
         
-        for i, token in enumerate(logprobs):
-            if token.logprob is not None:
-                # Convert logprob to confidence (0-100%)
-                confidence = min(100, max(0, exp(token.logprob) * 100))
-
-                # Simple color mapping
-                if confidence >= 70:
-                    color = "rgba(34, 139, 34, 0.8)"  # Green
-                elif confidence >= 40:
-                    color = "rgba(255, 165, 0, 0.8)"  # Orange
-                else:
-                    color = "rgba(220, 20, 60, 0.8)"  # Red
-
-                html_parts.append(
-                    f'<span style="background-color: {color}; padding: 2px 4px; margin: 1px; border-radius: 3px;">{html.escape(token.token)}</span>'
-                )
-
+        # Find min/max logprobs for better color scaling
+        logprobs = [token.logprob for token in tokens]
+        min_logprob = min(logprobs) if logprobs else -10
+        max_logprob = max(logprobs) if logprobs else 0
+        
+        for token in tokens:
+            # Get token string
+            if hasattr(token, 'bytes') and token.bytes is not None:
+                token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+            else:
+                token_str = str(token.token) if hasattr(token, 'token') else str(token)
+            
+            # Calculate color based on logprob using color scheme manager
+            color = color_manager.get_color(token.logprob, min_logprob, max_logprob, color_scheme)
+            
+            # Create styled span with enhanced hover effects
+            probability_percent = round(exp(token.logprob) * 100, 2)
+            
+            # Get alternative tokens if available
+            alternatives = ""
+            if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                alt_list = []
+                for alt in token.top_logprobs[:3]:
+                    if hasattr(alt, 'bytes') and alt.bytes is not None:
+                        alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                    else:
+                        alt_str = str(alt.token) if hasattr(alt, 'token') else str(alt)
+                    
+                    # Skip if it's the same as the selected token
+                    if alt_str != token_str:
+                        alt_prob = round(exp(alt.logprob) * 100, 2)
+                        alt_list.append(f"{repr(alt_str)} ({alt_prob}%)")
+                
+                if alt_list:
+                    alternatives = f", Alternatives: {', '.join(alt_list)}"
+            
+            # Properly escape HTML special characters in token string and title
+            escaped_token = html.escape(token_str)
+            escaped_repr = html.escape(repr(token_str))
+            escaped_alternatives = html.escape(alternatives)
+            
+            html_parts.append(
+                f'<span class="token-highlight" style="background-color: {color}; color: black; padding: 2px 4px; margin: 1px; border-radius: 3px; cursor: help;" '
+                f'title="Token: {escaped_repr}, Logprob: {token.logprob:.4f}, '
+                f'Probability: {probability_percent}%{escaped_alternatives}">{escaped_token}</span>'
+            )
+        
         return ''.join(html_parts)
 
     except Exception as e:
@@ -443,12 +473,46 @@ def main():
         st.divider()
         st.header("📊 Results & Analysis")
 
-        # Enhanced highlighted text
+        # Enhanced highlighted text with CSS styling
         highlighted_html = create_enhanced_highlighted_text(
             response, color_scheme)
         if highlighted_html:
             st.subheader("🎨 Highlighted Text")
-            st.markdown(highlighted_html, unsafe_allow_html=True)
+            # Add enhanced CSS for hover effects
+            st.markdown("""
+            <style>
+                .token-highlight {
+                    display: inline;
+                    margin: 0;
+                    padding: 1px 2px;
+                    border-radius: 2px;
+                    font-weight: normal;
+                    white-space: normal;
+                    transition: all 0.1s ease;
+                    font-size: inherit;
+                    line-height: inherit;
+                    word-break: normal;
+                }
+                .token-highlight:hover {
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                    position: relative;
+                    z-index: 1;
+                    transform: scale(1.05);
+                }
+                .analysis-container {
+                    background-color: #f8f9fa;
+                    padding: 1.5rem;
+                    border-radius: 0.75rem;
+                    margin: 1rem 0;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                    white-space: normal;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+            st.markdown(f'<div class="analysis-container">{highlighted_html}</div>', unsafe_allow_html=True)
             
             # Token details table
             st.subheader("🔍 Token Details")
@@ -457,26 +521,27 @@ def main():
             # Create token details data
             token_data = []
             choice = response.choices[0]
-            if hasattr(choice, 'logprobs') and choice.logprobs:
+            if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
                 logprobs = choice.logprobs.content
-                for i, token in enumerate(logprobs):
-                    if token.logprob is not None:
-                        confidence = min(100, max(0, exp(token.logprob) * 100))
-                        
-                        # Get top alternatives
-                        alternatives = []
-                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
-                            for alt in token.top_logprobs[:3]:
-                                alt_confidence = exp(alt.logprob) * 100
-                                alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
-                        
-                        token_data.append({
-                            "Position": i + 1,
-                            "Token": f'"{token.token}"',
-                            "Logprob": f"{token.logprob:.4f}",
-                            "Confidence": f"{confidence:.2f}%",
-                            "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
-                        })
+                if logprobs:
+                    for i, token in enumerate(logprobs):
+                        if token.logprob is not None:
+                            confidence = min(100, max(0, exp(token.logprob) * 100))
+                            
+                            # Get top alternatives
+                            alternatives = []
+                            if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                                for alt in token.top_logprobs[:3]:
+                                    alt_confidence = exp(alt.logprob) * 100
+                                    alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
+                            
+                            token_data.append({
+                                "Position": i + 1,
+                                "Token": f'"{token.token}"',
+                                "Logprob": f"{token.logprob:.4f}",
+                                "Confidence": f"{confidence:.2f}%",
+                                "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
+                            })
             
             if token_data:
                 # Display as interactive dataframe
