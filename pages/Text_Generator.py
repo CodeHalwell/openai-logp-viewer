@@ -102,7 +102,7 @@ def get_completion_with_logprobs(api_key_hash,
 
 
 def create_enhanced_highlighted_text(response, color_scheme="confidence"):
-    """Create HTML with enhanced highlighted text based on logprobs with hover tooltips."""
+    """Create text with green for top choice tokens and orange for non-top choices."""
     try:
         if not response or not hasattr(response, 'choices'):
             return ""
@@ -117,11 +117,6 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
 
         html_parts = []
         
-        # Find min/max logprobs for better color scaling
-        logprobs = [token.logprob for token in tokens]
-        min_logprob = min(logprobs) if logprobs else -10
-        max_logprob = max(logprobs) if logprobs else 0
-        
         for token in tokens:
             # Get token string
             if hasattr(token, 'bytes') and token.bytes is not None:
@@ -129,13 +124,19 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
             else:
                 token_str = str(token.token) if hasattr(token, 'token') else str(token)
             
-            # Calculate color based on logprob using color scheme manager
-            color = color_manager.get_color(token.logprob, min_logprob, max_logprob, color_scheme)
+            # Check if this was the top choice by examining top_logprobs
+            was_top_choice = True
+            if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                current_logprob = token.logprob
+                for alt_token in token.top_logprobs:
+                    if alt_token.logprob > current_logprob:
+                        was_top_choice = False
+                        break
             
-            # Create styled span with enhanced hover effects
+            # Calculate probability percentage
             probability_percent = round(exp(token.logprob) * 100, 2)
             
-            # Get alternative tokens if available
+            # Get alternative tokens for tooltip
             alternatives = ""
             if hasattr(token, 'top_logprobs') and token.top_logprobs:
                 alt_list = []
@@ -153,14 +154,22 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
                 if alt_list:
                     alternatives = f", Alternatives: {', '.join(alt_list)}"
             
-            # Properly escape HTML special characters in token string and title
+            # Choose color based on whether it was top choice
+            if was_top_choice:
+                color = "rgba(144, 238, 144, 0.6)"  # Light green for top choice
+                status = "TOP CHOICE"
+            else:
+                color = "rgba(255, 165, 0, 0.6)"  # Light orange for not top choice
+                status = "NOT TOP CHOICE"
+            
+            # Properly escape HTML special characters
             escaped_token = html.escape(token_str)
             escaped_repr = html.escape(repr(token_str))
             escaped_alternatives = html.escape(alternatives)
             
             html_parts.append(
                 f'<span class="token-highlight" style="background-color: {color}; color: black; padding: 2px 4px; margin: 1px; border-radius: 3px; cursor: help;" '
-                f'title="Token: {escaped_repr}, Logprob: {token.logprob:.4f}, '
+                f'title="{status}: {escaped_repr}, Logprob: {token.logprob:.4f}, '
                 f'Probability: {probability_percent}%{escaped_alternatives}">{escaped_token}</span>'
             )
         
@@ -478,14 +487,24 @@ def main():
             response, color_scheme)
         if highlighted_html:
             st.subheader("🎨 Highlighted Text")
+            
+            # Add legend
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown('<span style="background-color: rgba(144, 238, 144, 0.6); padding: 4px 8px; border-radius: 3px;">🟢 Top Choice Token</span>', unsafe_allow_html=True)
+            with col2:
+                st.markdown('<span style="background-color: rgba(255, 165, 0, 0.6); padding: 4px 8px; border-radius: 3px;">🟠 Not Top Choice</span>', unsafe_allow_html=True)
+            
+            st.write("")  # Add spacing
+            
             # Add enhanced CSS for hover effects
             st.markdown("""
             <style>
                 .token-highlight {
                     display: inline;
                     margin: 0;
-                    padding: 1px 2px;
-                    border-radius: 2px;
+                    padding: 2px 4px;
+                    border-radius: 3px;
                     font-weight: normal;
                     white-space: normal;
                     transition: all 0.1s ease;
@@ -494,10 +513,10 @@ def main():
                     word-break: normal;
                 }
                 .token-highlight:hover {
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
                     position: relative;
                     z-index: 1;
-                    transform: scale(1.05);
+                    transform: scale(1.02);
                 }
                 .analysis-container {
                     background-color: #f8f9fa;
@@ -509,6 +528,7 @@ def main():
                     white-space: normal;
                     max-width: 100%;
                     box-sizing: border-box;
+                    line-height: 1.6;
                 }
             </style>
             """, unsafe_allow_html=True)
