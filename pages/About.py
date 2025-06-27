@@ -50,7 +50,11 @@ def main():
 
     #### Perplexity
     
-    Perplexity measures how well a language model predicts a sequence of tokens. Lower perplexity indicates better prediction confidence.
+    Perplexity relates to the LLM output by measuring how predictable the entire generated text is to the model. A low score signifies that the sequence of words is conventional and aligns closely with what the model would expect based on its training, making the text feel coherent. A high score means the text is surprising and contains unusual word combinations, which can be a sign of either creativity or a lack of logical flow.
+
+    - **Low Temperature**: The model generates more predictable, focused text, which results in a lower perplexity score.
+    
+    - **High Temperature**: The model generates more random and surprising text, which results in a higher perplexity score.
     
     **Formula:**
     ```
@@ -72,7 +76,11 @@ def main():
 
     #### Entropy
     
-    Entropy measures the uncertainty or randomness in the model's predictions. Higher entropy indicates more uncertainty.
+    Entropy relates to the LLM output by measuring the model's uncertainty at each specific point in the text as it's being generated. It essentially quantifies how "undecided" the model is about the next word. Low entropy at a certain point means the next word was an obvious choice, whereas high entropy reveals a moment where the model saw many different words as viable options, indicating a creative juncture or a point of ambiguity.
+
+    - **Low Temperature**: The model's uncertainty is reduced, forcing it to favour the most likely word, resulting in lower entropy.
+    
+    - **High Temperature**: The model's uncertainty is increased by giving more weight to unlikely words, resulting in higher entropy.
     
     **Formula:**
     ```
@@ -93,7 +101,11 @@ def main():
 
     #### Confidence Distribution
     
-    Categorizes tokens by confidence levels based on their probabilities.
+    Confidence directly measures how strongly the model believed in the specific words it ultimately chose for the output. A high average confidence indicates that the model consistently selected the tokens it deemed most probable, leading to a reliable and stable response. A low average confidence, and a distribution with more low-confidence tokens, reveals that the model frequently ignored the "safe" choice in favour of more novel or risky ones.
+
+    - **Low Temperature**: The model is forced to pick the highest-probability words, leading to a higher average confidence.
+    
+    - **High Temperature**: The model is encouraged to select lower-probability words, which naturally results in a lower average confidence.
     
     **Confidence Levels:**
     - Very High: P ≥ 80% (logprob ≥ -0.223)

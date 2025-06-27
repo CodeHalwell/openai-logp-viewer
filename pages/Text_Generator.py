@@ -568,6 +568,80 @@ def main():
         
                 * **Stateless Interaction:** This app has no memory. Your prompts are not saved or associated with you by this application.
                 """)
+    with st.expander("💡 User Guide: Understanding the Generation Settings",
+                     expanded=False):
+        st.markdown("""
+
+            ## 💡 User Guide: Understanding the Generation Settings
+        
+            This guide explains what each setting in the sidebar does and how you can use them to shape the AI's response to your prompt. Experimenting with these parameters is the best way to understand their effect.
+
+            ## 🤖 Model Selection
+            This dropdown selects the "brain" of the AI. Each model has different strengths, speeds, and costs.
+
+            - gpt-4o-mini: The current model is a fantastic all-rounder. It's designed to be very fast and cost-effective while still being highly intelligent. It's great for a wide range of tasks, from creative writing to factual Q&A and code generation.
+
+            ## 🎛️ Parameters
+            These sliders allow you to fine-tune the behaviour of the selected model.
+
+            ### Temperature
+            **What it does:** 
+            
+            - Controls the randomness of the output. Think of it as a "creativity" or "risk-taking" knob.
+
+            **How it works:**
+
+            - Lower values (e.g., 0.2): Make the model more focused and deterministic. It will pick the most common and logical words, making the output safer and more predictable. This is ideal for factual summaries, translations, or code.
+
+            - Higher values (e.g., 1.2): Make the model more creative and surprising. It will be more willing to pick less common words, which can lead to interesting ideas but also increases the chance of errors or nonsensical text. This is good for brainstorming or creative writing.
+
+            - Default (0.70): A balanced setting suitable for most tasks.
+
+            ### Max Tokens
+            **What it does:** 
+            
+            - Sets a hard limit on the maximum length of the AI's response.
+
+            **How it works:** 
+            
+            - A "token" is a piece of a word; on average, 100 tokens is about 75 words. The model will stop generating text once it reaches this limit, even if it's in the middle of a sentence.
+
+            **When to use it:**
+
+            - Use lower values if you need a short, concise answer (like a headline or a quick summary).
+
+            - Use higher values if you need a long, detailed response (like an article or a story).
+
+            ### Frequency Penalty
+            **What it does:** 
+            
+            - Discourages the model from repeating the same word or phrase over and over again.
+
+            **How it works:** 
+            
+            - Positive values apply a small penalty to words each time they are used, making them slightly less likely to be chosen again. This helps increase the linguistic variety of the output.
+
+            **When to use it:**
+
+            - Set it to a positive value (e.g., 0.5 - 1.5) if you find the AI output is too repetitive and you want more varied language.
+
+            - Leave it at 0.0 if you don't want to influence this behaviour.
+
+            ### Presence Penalty
+            **What it does:** 
+            
+            - Encourages the model to introduce new topics or concepts in its response.
+
+            **How it works:**
+            
+            - While frequency penalty penalises words for being used repeatedly, presence penalty penalises them just for being used at all. A positive value will push the model to talk about different things and avoid getting stuck on a single idea.
+
+            **When to use it:**
+
+            - Set it to a positive value (e.g., 0.5 - 1.5) when you are brainstorming or want the AI to explore a topic from multiple different angles.
+
+            - Leave it at 0.0 for more focused, on-topic responses.
+        """)
 
     selected_example = st.selectbox("Quick Examples (optional)",
                                     [""] + prompt_examples)
