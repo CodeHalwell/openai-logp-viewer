@@ -116,54 +116,59 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
             return ""
 
         html_parts = []
-        
+
         # Find min/max logprobs for better color scaling
         logprobs = [token.logprob for token in tokens]
         min_logprob = min(logprobs) if logprobs else -10
         max_logprob = max(logprobs) if logprobs else 0
-        
+
         for token in tokens:
             # Get token string
             if hasattr(token, 'bytes') and token.bytes is not None:
-                token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                token_str = bytes(token.bytes).decode("utf-8",
+                                                      errors="replace")
             else:
-                token_str = str(token.token) if hasattr(token, 'token') else str(token)
-            
+                token_str = str(token.token) if hasattr(
+                    token, 'token') else str(token)
+
             # Calculate color based on logprob using color scheme manager
-            color = color_manager.get_color(token.logprob, min_logprob, max_logprob, color_scheme)
-            
+            color = color_manager.get_color(token.logprob, min_logprob,
+                                            max_logprob, color_scheme)
+
             # Create styled span with enhanced hover effects
             probability_percent = round(exp(token.logprob) * 100, 2)
-            
+
             # Get alternative tokens if available
             alternatives = ""
             if hasattr(token, 'top_logprobs') and token.top_logprobs:
                 alt_list = []
                 for alt in token.top_logprobs[:3]:
                     if hasattr(alt, 'bytes') and alt.bytes is not None:
-                        alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                        alt_str = bytes(alt.bytes).decode("utf-8",
+                                                          errors="replace")
                     else:
-                        alt_str = str(alt.token) if hasattr(alt, 'token') else str(alt)
-                    
+                        alt_str = str(alt.token) if hasattr(
+                            alt, 'token') else str(alt)
+
                     # Skip if it's the same as the selected token
                     if alt_str != token_str:
                         alt_prob = round(exp(alt.logprob) * 100, 2)
                         alt_list.append(f"{repr(alt_str)} ({alt_prob}%)")
-                
+
                 if alt_list:
                     alternatives = f", Alternatives: {', '.join(alt_list)}"
-            
+
             # Properly escape HTML special characters in token string and title
             escaped_token = html.escape(token_str)
             escaped_repr = html.escape(repr(token_str))
             escaped_alternatives = html.escape(alternatives)
-            
+
             html_parts.append(
                 f'<span class="token-highlight" style="background-color: {color}; color: black; padding: 2px 4px; margin: 1px; border-radius: 3px; cursor: help;" '
                 f'title="Token: {escaped_repr}, Logprob: {token.logprob:.4f}, '
                 f'Probability: {probability_percent}%{escaped_alternatives}">{escaped_token}</span>'
             )
-        
+
         return ''.join(html_parts)
 
     except Exception as e:
@@ -188,15 +193,17 @@ def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
         tokens = []
         probabilities = []
         positions = []
-        
+
         for i, token in enumerate(logprobs):
             if token.logprob is not None:
                 # Get token string
                 if hasattr(token, 'bytes') and token.bytes is not None:
-                    token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                    token_str = bytes(token.bytes).decode("utf-8",
+                                                          errors="replace")
                 else:
-                    token_str = str(token.token) if hasattr(token, 'token') else str(token)
-                
+                    token_str = str(token.token) if hasattr(
+                        token, 'token') else str(token)
+
                 tokens.append(token_str)
                 probabilities.append(exp(token.logprob) * 100)
                 positions.append(i + 1)
@@ -220,60 +227,60 @@ def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
                     colors.append('#FF8C00')  # Dark Orange - Low
                 else:
                     colors.append('#DC143C')  # Crimson - Very Low
-            
-            fig = go.Figure(data=[go.Bar(
-                x=positions,
-                y=probabilities,
-                marker_color=colors,
-                text=[f"{token}<br>{prob:.1f}%" for token, prob in zip(tokens, probabilities)],
-                textposition="outside",
-                textfont=dict(size=10),
-                hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Token:</b> %{text}<br>" +
-                             "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
-                customdata=tokens
-            )])
+
+            fig = go.Figure(data=[
+                go.Bar(x=positions,
+                       y=probabilities,
+                       marker_color=colors,
+                       text=[
+                           f"{token}<br>{prob:.1f}%"
+                           for token, prob in zip(tokens, probabilities)
+                       ],
+                       textposition="outside",
+                       textfont=dict(size=10),
+                       hovertemplate="<b>Position:</b> %{x}<br>" +
+                       "<b>Token:</b> %{text}<br>" +
+                       "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
+                       customdata=tokens)
+            ])
             fig.update_layout(
                 title="Token Confidence Levels",
                 xaxis_title="Token Position",
                 yaxis_title="Confidence (%)",
                 showlegend=False,
-                yaxis=dict(range=[0, max(probabilities) * 1.2])  # Add 20% padding
+                yaxis=dict(range=[0,
+                                  max(probabilities) * 1.2])  # Add 20% padding
             )
-            
+
         elif chart_type == "line":
-            fig = px.line(
-                x=positions,
-                y=probabilities,
-                title="Token Confidence Progression",
-                labels={
-                    "x": "Token Position", 
-                    "y": "Confidence (%)"
-                },
-                markers=True
-            )
-            fig.update_traces(
-                hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Token:</b> %{text}<br>" +
-                             "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
-                line=dict(width=3),
-                marker=dict(size=8),
-                text=tokens
-            )
+            fig = px.line(x=positions,
+                          y=probabilities,
+                          title="Token Confidence Progression",
+                          labels={
+                              "x": "Token Position",
+                              "y": "Confidence (%)"
+                          },
+                          markers=True)
+            fig.update_traces(hovertemplate="<b>Position:</b> %{x}<br>" +
+                              "<b>Token:</b> %{text}<br>" +
+                              "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
+                              line=dict(width=3),
+                              marker=dict(size=8),
+                              text=tokens)
             # Add text annotations for each point
-            for i, (pos, prob, token) in enumerate(zip(positions, probabilities, tokens)):
-                fig.add_annotation(
-                    x=pos,
-                    y=prob,
-                    text=token,
-                    showarrow=False,
-                    yshift=15,
-                    font=dict(size=10)
-                )
+            for i, (pos, prob,
+                    token) in enumerate(zip(positions, probabilities, tokens)):
+                fig.add_annotation(x=pos,
+                                   y=prob,
+                                   text=token,
+                                   showarrow=False,
+                                   yshift=15,
+                                   font=dict(size=10))
             fig.update_layout(
-                yaxis=dict(range=[0, max(probabilities) * 1.3])  # Add 30% padding for annotations
+                yaxis=dict(range=[0, max(probabilities) *
+                                  1.3])  # Add 30% padding for annotations
             )
-            
+
         elif chart_type == "scatter":
             # Create confidence categories for color coding
             confidence_categories = []
@@ -288,12 +295,13 @@ def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
                     confidence_categories.append("Low (20-40%)")
                 else:
                     confidence_categories.append("Very Low (<20%)")
-            
+
             fig = px.scatter(
                 x=positions,
                 y=probabilities,
                 color=confidence_categories,
-                size=[max(8, prob/4) for prob in probabilities],  # Size based on confidence
+                size=[max(5, (100 - prob) / 3)
+                      for prob in probabilities],  # Inverted size: lower confidence = larger
                 title="Token Confidence Distribution",
                 labels={
                     "x": "Token Position",
@@ -302,71 +310,61 @@ def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
                 },
                 color_discrete_map={
                     "Very High (80%+)": "#2E8B57",
-                    "High (60-80%)": "#32CD32", 
+                    "High (60-80%)": "#32CD32",
                     "Medium (40-60%)": "#FFD700",
                     "Low (20-40%)": "#FF8C00",
                     "Very Low (<20%)": "#DC143C"
-                }
-            )
-            fig.update_traces(
-                hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Token:</b> %{text}<br>" +
-                             "<b>Confidence:</b> %{y:.2f}%<br>" +
-                             "<b>Level:</b> %{color}<extra></extra>",
-                text=tokens
-            )
+                })
+            fig.update_traces(hovertemplate="<b>Position:</b> %{x}<br>" +
+                              "<b>Token:</b> %{text}<br>" +
+                              "<b>Confidence:</b> %{y:.2f}%<br>" +
+                              "<b>Level:</b> %{color}<extra></extra>",
+                              text=tokens)
             # Add text annotations for each point
-            for i, (pos, prob, token) in enumerate(zip(positions, probabilities, tokens)):
-                fig.add_annotation(
-                    x=pos,
-                    y=prob,
-                    text=token,
-                    showarrow=False,
-                    yshift=15,
-                    font=dict(size=10)
-                )
+            for i, (pos, prob,
+                    token) in enumerate(zip(positions, probabilities, tokens)):
+                fig.add_annotation(x=pos,
+                                   y=prob,
+                                   text=token,
+                                   showarrow=False,
+                                   yshift=15,
+                                   font=dict(size=10))
             fig.update_layout(
-                yaxis=dict(range=[0, max(probabilities) * 1.3])  # Add 30% padding for annotations
+                yaxis=dict(range=[0, max(probabilities) *
+                                  1.3])  # Add 30% padding for annotations
             )
-            
+
         elif chart_type == "box":
             # Create box plot showing confidence distribution
             fig = go.Figure()
-            fig.add_trace(go.Box(
-                y=probabilities,
-                name="Token Confidence",
-                boxpoints='all',
-                jitter=0.3,
-                pointpos=-1.8,
-                text=tokens,
-                hovertemplate="<b>Token:</b> %{text}<br>" +
-                             "<b>Confidence:</b> %{y:.2f}%<extra></extra>"
-            ))
-            fig.update_layout(
-                title="Token Confidence Distribution (Box Plot)",
-                yaxis_title="Confidence (%)",
-                showlegend=False
-            )
-            
+            fig.add_trace(
+                go.Box(y=probabilities,
+                       name="Token Confidence",
+                       boxpoints='all',
+                       jitter=0.3,
+                       pointpos=-1.8,
+                       text=tokens,
+                       hovertemplate="<b>Token:</b> %{text}<br>" +
+                       "<b>Confidence:</b> %{y:.2f}%<extra></extra>"))
+            fig.update_layout(title="Token Confidence Distribution (Box Plot)",
+                              yaxis_title="Confidence (%)",
+                              showlegend=False)
+
         else:  # Default to bar chart
-            fig = px.bar(
-                x=positions,
-                y=probabilities,
-                title="Token Confidence Levels",
-                labels={
-                    "x": "Token Position",
-                    "y": "Confidence (%)"
-                }
-            )
+            fig = px.bar(x=positions,
+                         y=probabilities,
+                         title="Token Confidence Levels",
+                         labels={
+                             "x": "Token Position",
+                             "y": "Confidence (%)"
+                         })
 
         # Common styling
-        fig.update_layout(
-            height=400,
-            font=dict(size=12),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)'
-        )
-        
+        fig.update_layout(height=400,
+                          font=dict(size=12),
+                          plot_bgcolor='rgba(0,0,0,0)',
+                          paper_bgcolor='rgba(0,0,0,0)')
+
         return fig
 
     except Exception as e:
@@ -392,10 +390,12 @@ def create_top_choice_analysis(response):
             if token.logprob is not None:
                 # Get token string
                 if hasattr(token, 'bytes') and token.bytes is not None:
-                    token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                    token_str = bytes(token.bytes).decode("utf-8",
+                                                          errors="replace")
                 else:
-                    token_str = str(token.token) if hasattr(token, 'token') else str(token)
-                
+                    token_str = str(token.token) if hasattr(
+                        token, 'token') else str(token)
+
                 # Check if this was the top choice by examining top_logprobs
                 was_top_choice = True
                 if hasattr(token, 'top_logprobs') and token.top_logprobs:
@@ -404,10 +404,10 @@ def create_top_choice_analysis(response):
                         if alt_token.logprob > current_logprob:
                             was_top_choice = False
                             break
-                
+
                 # Calculate probability percentage
                 probability = exp(token.logprob) * 100
-                
+
                 # Create styling based on whether it was top choice
                 if was_top_choice:
                     # Green background for top choice
@@ -415,11 +415,12 @@ def create_top_choice_analysis(response):
                 else:
                     # Orange background for not top choice
                     style = "background-color: rgba(255, 165, 0, 0.6); padding: 2px 4px; margin: 1px; border-radius: 3px;"
-                
+
                 # Escape HTML characters
                 escaped_token = html.escape(token_str)
-                
-                html_parts.append(f'<span style="{style}">{escaped_token}</span>')
+
+                html_parts.append(
+                    f'<span style="{style}">{escaped_token}</span>')
 
         return ''.join(html_parts)
 
@@ -530,10 +531,15 @@ def main():
         st.subheader("🎨 Visualization")
         color_scheme = st.selectbox("Color Scheme",
                                     ["confidence", "rainbow", "heat", "ocean"])
-        chart_type = st.selectbox("Chart Type", 
-                                 ["bar", "line", "scatter", "box"])
-        max_tokens_display = st.slider("Tokens to Display", 5, 50, 20, 1,
-                                      help="Number of tokens to show in charts")
+        chart_type = st.selectbox("Chart Type",
+                                  ["bar", "line", "scatter", "box"])
+        max_tokens_display = st.slider(
+            "Tokens to Display",
+            5,
+            500,
+            50,
+            1,
+            help="Number of tokens to show in charts")
 
     # Main content
     st.header("💭 Text Generation")
@@ -694,65 +700,87 @@ def main():
                     box-sizing: border-box;
                 }
             </style>
-            """, unsafe_allow_html=True)
-            st.markdown(f'<div class="analysis-container">{highlighted_html}</div>', unsafe_allow_html=True)
+            """,
+                        unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="analysis-container">{highlighted_html}</div>',
+                unsafe_allow_html=True)
 
         # Top Choice Analysis
         st.subheader("🎯 Top Choice Analysis")
         top_choice_html = create_top_choice_analysis(response)
         if top_choice_html:
-            st.markdown(f'<div class="analysis-container">{top_choice_html}</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="analysis-container">{top_choice_html}</div>',
+                unsafe_allow_html=True)
 
         # Probability Chart
         st.subheader("📈 Probability Chart")
-        fig = create_enhanced_logprob_chart(response, chart_type, max_tokens_display)
+        fig = create_enhanced_logprob_chart(response, chart_type,
+                                            max_tokens_display)
         if fig:
             st.plotly_chart(fig, use_container_width=True)
 
         # Token details table
         st.subheader("🔍 Token Details")
         st.write("Detailed information for each token:")
-        
+
         # Create token details data
         token_data = []
         choice = response.choices[0]
-        if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
+        if hasattr(choice,
+                   'logprobs') and choice.logprobs and choice.logprobs.content:
             logprobs = choice.logprobs.content
             if logprobs:
                 for i, token in enumerate(logprobs):
                     if token.logprob is not None:
                         confidence = min(100, max(0, exp(token.logprob) * 100))
-                        
+
                         # Get top alternatives
                         alternatives = []
-                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                        if hasattr(token,
+                                   'top_logprobs') and token.top_logprobs:
                             for alt in token.top_logprobs[:3]:
                                 alt_confidence = exp(alt.logprob) * 100
-                                alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
-                        
+                                alternatives.append(
+                                    f"{alt.token} ({alt_confidence:.1f}%)")
+
                         token_data.append({
-                            "Position": i + 1,
-                            "Token": f'"{token.token}"',
-                            "Logprob": f"{token.logprob:.4f}",
-                            "Confidence": f"{confidence:.2f}%",
-                            "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
+                            "Position":
+                            i + 1,
+                            "Token":
+                            f'"{token.token}"',
+                            "Logprob":
+                            f"{token.logprob:.4f}",
+                            "Confidence":
+                            f"{confidence:.2f}%",
+                            "Top Alternatives":
+                            " | ".join(alternatives) if alternatives else "N/A"
                         })
-        
+
         if token_data:
             # Display as interactive dataframe
             df = pd.DataFrame(token_data)
-            st.dataframe(
-                df,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Position": st.column_config.NumberColumn("Pos", width="small"),
-                    "Token": st.column_config.TextColumn("Token", width="small"),
-                    "Logprob": st.column_config.TextColumn("Logprob", width="small"),
-                    "Confidence": st.column_config.TextColumn("Confidence", width="small"),
-                    "Top Alternatives": st.column_config.TextColumn("Top Alternatives", width="large")
-                }
-            )
+            st.dataframe(df,
+                         use_container_width=True,
+                         hide_index=True,
+                         column_config={
+                             "Position":
+                             st.column_config.NumberColumn("Pos",
+                                                           width="small"),
+                             "Token":
+                             st.column_config.TextColumn("Token",
+                                                         width="small"),
+                             "Logprob":
+                             st.column_config.TextColumn("Logprob",
+                                                         width="small"),
+                             "Confidence":
+                             st.column_config.TextColumn("Confidence",
+                                                         width="small"),
+                             "Top Alternatives":
+                             st.column_config.TextColumn("Top Alternatives",
+                                                         width="large")
+                         })
 
         # Statistics
         st.subheader("📊 Statistical Analysis")
