@@ -388,7 +388,7 @@ def main():
                 st.info(f"Estimated tokens used: {actual_tokens_used}")
         
         elif error:
-                st.error(f"Generation failed: {error['error_details']}")
+            st.error(f"Generation failed: {error.get('error_details', 'Unknown error')}")
     
     # Display results
     if hasattr(st.session_state, 'response') and st.session_state.response:

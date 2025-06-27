@@ -108,6 +108,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- June 27, 2025: Updated model selection to include only gpt-4o-mini (default), gpt-4o, and gpt-4.1-mini
+  - Added loading indicators with spinning animation for page load and text generation
+  - Made logo smaller (120px) specifically on Text Generator page
+  - Added codehalwell.io website links to footer and About page sections
 - June 20, 2025: Updated About page to reflect Daniel's professional background and expertise
   - Personalized content around Senior Scientist and Data Scientist experience
   - Highlighted Kaggle achievements and professional certifications
