@@ -10,15 +10,15 @@ import streamlit as st
 def main():
     """Display the About CodeHalwell section."""
     
-    # Header with logo - smaller and centered
+    st.title("About Daniel & CodeHalwell")
+    
+    # Header with logo below title - smaller and centered
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         try:
-            st.image("assets/logo.png", width=200)
+            st.image("assets/logo.png", width=120)
         except:
             st.markdown("**CodeHalwell**")
-    
-    st.title("About Daniel & CodeHalwell")
     
     st.markdown("""
     ## Hello! I'm Daniel

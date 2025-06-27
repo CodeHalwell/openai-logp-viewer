@@ -16,18 +16,8 @@ rate_limiter = RateLimiter()
 def main():
     """CodeHalwell Homepage - Welcome to AI Text Generation Platform."""
 
-    # Hero section with logo and branding
+    # Hero section with title first, then logo
     st.markdown('<div class="main-header">', unsafe_allow_html=True)
-
-    # Display CodeHalwell logo centered
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
-        try:
-            st.image("assets/logo.png", width=200)
-        except:
-            st.markdown("**CodeHalwell**")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     # Welcome message
     st.markdown("""
@@ -40,6 +30,16 @@ def main():
     </div>
     """,
                 unsafe_allow_html=True)
+
+    # Display CodeHalwell logo centered below title
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        try:
+            st.image("assets/logo.png", width=120)
+        except:
+            st.markdown("**CodeHalwell**")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # Feature highlights
     col1, col2, col3 = st.columns(3)

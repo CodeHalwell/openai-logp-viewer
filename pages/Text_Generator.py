@@ -202,15 +202,15 @@ def main():
         cleanup_session_security()
         st.session_state.session_initialized = True
     
-    # Header with smaller logo
+    st.title("🤖 AI Text Generation with Confidence Analysis")
+    
+    # Header with logo below title
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         try:
             st.image("assets/logo.png", width=120)
         except:
             st.markdown("**CodeHalwell**")
-    
-    st.title("🤖 AI Text Generation with Confidence Analysis")
     
     # Show loading indicator on first page load
     if 'page_loaded' not in st.session_state:
