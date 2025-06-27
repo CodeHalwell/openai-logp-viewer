@@ -108,6 +108,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- June 27, 2025: Enhanced Token Details table with advanced interactivity
+  - Added search functionality to filter tokens by text content
+  - Implemented confidence level filtering (Very High, High, Medium, Low, Very Low)
+  - Separated token alternatives into individual columns for better readability
+  - Added color-coded confidence indicators with emoji symbols
+  - Included CSV export functionality with timestamped filenames
+  - Removed quotation marks from token display for cleaner presentation
+  - Set table height to 400px for optimal scrolling experience
+- June 27, 2025: Added comprehensive mathematical foundations to About page
+  - Detailed Perplexity calculation formulas and implementation
+  - Entropy calculation with mathematical notation
+  - Confidence distribution categorization with logprob thresholds
+  - Average confidence calculation methodology
+  - Color mapping logic for token visualization
+  - Educational code examples for all statistical measures
 - June 27, 2025: Updated model selection to include only gpt-4o-mini (default), gpt-4o, and gpt-4.1-mini
   - Added loading indicators with spinning animation for page load and text generation
   - Made logo smaller (120px) specifically on Text Generator page

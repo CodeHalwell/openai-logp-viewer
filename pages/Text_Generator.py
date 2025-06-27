@@ -300,8 +300,8 @@ def create_enhanced_logprob_chart(response, chart_type="bar", max_tokens=20):
                 x=positions,
                 y=probabilities,
                 color=confidence_categories,
-                size=[max(5, (100 - prob) / 3)
-                      for prob in probabilities],  # Inverted size: lower confidence = larger
+                size=[max(5, (100 - prob) / 3) for prob in probabilities
+                      ],  # Inverted size: lower confidence = larger
                 title="Token Confidence Distribution",
                 labels={
                     "x": "Token Position",
@@ -553,6 +553,22 @@ def main():
         "The most important lesson I learned"
     ]
 
+    with st.expander(
+            "ℹ️ Important: How this app works & how your data is used",
+            expanded=False,
+            icon="🚨"):
+        st.warning("""
+                This educational tool is provided to you **free of charge**. This is made possible by allowing OpenAI to process the (non-personal) text you enter to improve their services.
+        
+                Here’s a clear breakdown of what this means:
+        
+                * **Your input is sent to OpenAI:** To generate text completions and their probabilities, the text you enter is processed by OpenAI's servers.
+        
+                * **⚠️ Do Not Share Sensitive Information:** Because your input is shared, you **must not** enter any personally identifiable information (PII) such as names, addresses, phone numbers, or any other private data.
+        
+                * **Stateless Interaction:** This app has no memory. Your prompts are not saved or associated with you by this application.
+                """)
+
     selected_example = st.selectbox("Quick Examples (optional)",
                                     [""] + prompt_examples)
 
@@ -728,32 +744,39 @@ def main():
         # Create token details data
         token_data = []
         choice = response.choices[0]
-        if hasattr(choice, 'logprobs') and choice.logprobs and choice.logprobs.content:
+        if hasattr(choice,
+                   'logprobs') and choice.logprobs and choice.logprobs.content:
             logprobs = choice.logprobs.content
             if logprobs:
                 for i, token in enumerate(logprobs):
                     if token.logprob is not None:
                         confidence = min(100, max(0, exp(token.logprob) * 100))
-                        
+
                         # Get token string
                         if hasattr(token, 'bytes') and token.bytes is not None:
-                            token_str = bytes(token.bytes).decode("utf-8", errors="replace")
+                            token_str = bytes(token.bytes).decode(
+                                "utf-8", errors="replace")
                         else:
-                            token_str = str(token.token) if hasattr(token, 'token') else str(token)
-                        
+                            token_str = str(token.token) if hasattr(
+                                token, 'token') else str(token)
+
                         # Get top alternatives with better formatting
                         alt_1, alt_2, alt_3 = "—", "—", "—"
                         alt_1_conf, alt_2_conf, alt_3_conf = "", "", ""
-                        
-                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+
+                        if hasattr(token,
+                                   'top_logprobs') and token.top_logprobs:
                             for idx, alt in enumerate(token.top_logprobs[:3]):
-                                if hasattr(alt, 'bytes') and alt.bytes is not None:
-                                    alt_str = bytes(alt.bytes).decode("utf-8", errors="replace")
+                                if hasattr(alt,
+                                           'bytes') and alt.bytes is not None:
+                                    alt_str = bytes(alt.bytes).decode(
+                                        "utf-8", errors="replace")
                                 else:
-                                    alt_str = str(alt.token) if hasattr(alt, 'token') else str(alt)
-                                
+                                    alt_str = str(alt.token) if hasattr(
+                                        alt, 'token') else str(alt)
+
                                 alt_confidence = exp(alt.logprob) * 100
-                                
+
                                 if idx == 0:
                                     alt_1 = f'"{alt_str}"'
                                     alt_1_conf = f"{alt_confidence:.1f}%"
@@ -763,7 +786,7 @@ def main():
                                 elif idx == 2:
                                     alt_3 = f'"{alt_str}"'
                                     alt_3_conf = f"{alt_confidence:.1f}%"
-                        
+
                         # Determine confidence level
                         if confidence >= 80:
                             conf_level = "🟢 Very High"
@@ -775,7 +798,7 @@ def main():
                             conf_level = "🔴 Low"
                         else:
                             conf_level = "⚫ Very Low"
-                        
+
                         token_data.append({
                             "Position": i + 1,
                             "Token": f'"{token_str}"',
@@ -794,71 +817,101 @@ def main():
             # Search and filter functionality
             col1, col2 = st.columns([3, 1])
             with col1:
-                search_term = st.text_input("🔍 Search tokens:", placeholder="Enter token text to search...")
+                search_term = st.text_input(
+                    "🔍 Search tokens:",
+                    placeholder="Enter token text to search...")
             with col2:
-                confidence_filter = st.selectbox("Filter by confidence:", 
-                                               ["All", "Very High (80%+)", "High (60-80%)", 
-                                                "Medium (40-60%)", "Low (20-40%)", "Very Low (<20%)"])
-            
+                confidence_filter = st.selectbox("Filter by confidence:", [
+                    "All", "Very High (80%+)", "High (60-80%)",
+                    "Medium (40-60%)", "Low (20-40%)", "Very Low (<20%)"
+                ])
+
             # Filter data based on search and confidence
             df = pd.DataFrame(token_data)
-            
+
             # Remove quotation marks from Token and Alternative columns for cleaner display
             df['Token'] = df['Token'].str.replace('"', '')
             df['Alt 1'] = df['Alt 1'].str.replace('"', '')
             df['Alt 2'] = df['Alt 2'].str.replace('"', '')
             df['Alt 3'] = df['Alt 3'].str.replace('"', '')
-            
+
             if search_term:
-                mask = df['Token'].str.contains(search_term, case=False, na=False)
+                mask = df['Token'].str.contains(search_term,
+                                                case=False,
+                                                na=False)
                 df = df[mask]
-            
+
             if confidence_filter != "All":
                 if confidence_filter == "Very High (80%+)":
                     df = df[df['Confidence %'] >= 80]
                 elif confidence_filter == "High (60-80%)":
-                    df = df[(df['Confidence %'] >= 60) & (df['Confidence %'] < 80)]
+                    df = df[(df['Confidence %'] >= 60)
+                            & (df['Confidence %'] < 80)]
                 elif confidence_filter == "Medium (40-60%)":
-                    df = df[(df['Confidence %'] >= 40) & (df['Confidence %'] < 60)]
+                    df = df[(df['Confidence %'] >= 40)
+                            & (df['Confidence %'] < 60)]
                 elif confidence_filter == "Low (20-40%)":
-                    df = df[(df['Confidence %'] >= 20) & (df['Confidence %'] < 40)]
+                    df = df[(df['Confidence %'] >= 20)
+                            & (df['Confidence %'] < 40)]
                 elif confidence_filter == "Very Low (<20%)":
                     df = df[df['Confidence %'] < 20]
-            
+
             # Display results count
             if search_term or confidence_filter != "All":
                 st.info(f"Showing {len(df)} of {len(token_data)} tokens")
-            
+
             # Display enhanced interactive dataframe
-            st.dataframe(
-                df,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Position": st.column_config.NumberColumn("Pos", width="small"),
-                    "Token": st.column_config.TextColumn("Token", width="medium"),
-                    "Logprob": st.column_config.NumberColumn("Logprob", width="small", format="%.4f"),
-                    "Confidence %": st.column_config.NumberColumn("Conf %", width="small", format="%.2f"),
-                    "Level": st.column_config.TextColumn("Level", width="medium"),
-                    "Alt 1": st.column_config.TextColumn("Alternative 1", width="medium"),
-                    "Alt 1 %": st.column_config.TextColumn("Conf %", width="small"),
-                    "Alt 2": st.column_config.TextColumn("Alternative 2", width="medium"),
-                    "Alt 2 %": st.column_config.TextColumn("Conf %", width="small"),
-                    "Alt 3": st.column_config.TextColumn("Alternative 3", width="medium"),
-                    "Alt 3 %": st.column_config.TextColumn("Conf %", width="small")
-                },
-                height=400
-            )
-            
+            st.dataframe(df,
+                         use_container_width=True,
+                         hide_index=True,
+                         column_config={
+                             "Position":
+                             st.column_config.NumberColumn("Pos",
+                                                           width="small"),
+                             "Token":
+                             st.column_config.TextColumn("Token",
+                                                         width="medium"),
+                             "Logprob":
+                             st.column_config.NumberColumn("Logprob",
+                                                           width="small",
+                                                           format="%.4f"),
+                             "Confidence %":
+                             st.column_config.NumberColumn("Conf %",
+                                                           width="small",
+                                                           format="%.2f"),
+                             "Level":
+                             st.column_config.TextColumn("Level",
+                                                         width="medium"),
+                             "Alt 1":
+                             st.column_config.TextColumn("Alternative 1",
+                                                         width="medium"),
+                             "Alt 1 %":
+                             st.column_config.TextColumn("Conf %",
+                                                         width="small"),
+                             "Alt 2":
+                             st.column_config.TextColumn("Alternative 2",
+                                                         width="medium"),
+                             "Alt 2 %":
+                             st.column_config.TextColumn("Conf %",
+                                                         width="small"),
+                             "Alt 3":
+                             st.column_config.TextColumn("Alternative 3",
+                                                         width="medium"),
+                             "Alt 3 %":
+                             st.column_config.TextColumn("Conf %",
+                                                         width="small")
+                         },
+                         height=400)
+
             # Export functionality
             if st.button("📥 Export to CSV"):
                 csv = df.to_csv(index=False)
                 st.download_button(
                     label="Download CSV",
                     data=csv,
-                    file_name=f"token_details_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv"
-                )
+                    file_name=
+                    f"token_details_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv")
 
         # Statistics
         st.subheader("📊 Statistical Analysis")

@@ -33,6 +33,22 @@ def main():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    with st.expander(
+            "ℹ️ Important: How this app works & how your data is used",
+            expanded=True,
+            icon="🚨"):
+        st.warning("""
+            This educational tool is provided to you **free of charge**. This is made possible by allowing OpenAI to process the (non-personal) text you enter to improve their services.
+
+            Here’s a clear breakdown of what this means:
+
+            * **Your input is sent to OpenAI:** To generate text completions and their probabilities, the text you enter is processed by OpenAI's servers.
+
+            * **⚠️ Do Not Share Sensitive Information:** Because your input is shared, you **must not** enter any personally identifiable information (PII) such as names, addresses, phone numbers, or any other private data.
+
+            * **Stateless Interaction:** This app has no memory. Your prompts are not saved or associated with you by this application.
+            """)
+
     # Sidebar with logo
     with st.sidebar:
         try:
@@ -102,8 +118,8 @@ def main():
 
     with col1:
         st.metric("OpenAI Models",
-                  "6+",
-                  help="GPT-4o, GPT-4, GPT-3.5 and variants")
+                  "3",
+                  help="GPT-4o, GPT-4o-mini, GPT-4.1-mini")
 
     with col2:
         st.metric("Security Layers",
@@ -117,7 +133,7 @@ def main():
 
     with col4:
         st.metric("Export Formats",
-                  "3+",
+                  "3",
                   help="Text, JSON, CSV with detailed metadata")
 
     # Current usage status
