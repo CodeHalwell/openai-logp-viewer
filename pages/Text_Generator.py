@@ -238,27 +238,42 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
                 title="Token Confidence Levels",
                 xaxis_title="Token Position",
                 yaxis_title="Confidence (%)",
-                showlegend=False
+                showlegend=False,
+                yaxis=dict(range=[0, max(probabilities) * 1.2])  # Add 20% padding
             )
             
         elif chart_type == "line":
             fig = px.line(
-                x=tokens,
+                x=positions,
                 y=probabilities,
                 title="Token Confidence Progression",
                 labels={
-                    "x": "Tokens", 
+                    "x": "Token Position", 
                     "y": "Confidence (%)"
                 },
                 markers=True
             )
             fig.update_traces(
-                hovertemplate="<b>Token:</b> %{x}<br>" +
+                hovertemplate="<b>Position:</b> %{x}<br>" +
+                             "<b>Token:</b> %{text}<br>" +
                              "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
                 line=dict(width=3),
-                marker=dict(size=8)
+                marker=dict(size=8),
+                text=tokens
             )
-            fig.update_xaxes(tickangle=45)
+            # Add text annotations for each point
+            for i, (pos, prob, token) in enumerate(zip(positions, probabilities, tokens)):
+                fig.add_annotation(
+                    x=pos,
+                    y=prob,
+                    text=token,
+                    showarrow=False,
+                    yshift=15,
+                    font=dict(size=10)
+                )
+            fig.update_layout(
+                yaxis=dict(range=[0, max(probabilities) * 1.3])  # Add 30% padding for annotations
+            )
             
         elif chart_type == "scatter":
             # Create confidence categories for color coding
@@ -276,13 +291,13 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
                     confidence_categories.append("Very Low (<20%)")
             
             fig = px.scatter(
-                x=tokens,
+                x=positions,
                 y=probabilities,
                 color=confidence_categories,
                 size=[max(8, prob/4) for prob in probabilities],  # Size based on confidence
                 title="Token Confidence Distribution",
                 labels={
-                    "x": "Tokens",
+                    "x": "Token Position",
                     "y": "Confidence (%)",
                     "color": "Confidence Level"
                 },
@@ -295,32 +310,44 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
                 }
             )
             fig.update_traces(
-                hovertemplate="<b>Token:</b> %{x}<br>" +
+                hovertemplate="<b>Position:</b> %{x}<br>" +
+                             "<b>Token:</b> %{text}<br>" +
                              "<b>Confidence:</b> %{y:.2f}%<br>" +
-                             "<b>Level:</b> %{color}<extra></extra>"
+                             "<b>Level:</b> %{color}<extra></extra>",
+                text=tokens
             )
-            fig.update_xaxes(tickangle=45)
+            # Add text annotations for each point
+            for i, (pos, prob, token) in enumerate(zip(positions, probabilities, tokens)):
+                fig.add_annotation(
+                    x=pos,
+                    y=prob,
+                    text=token,
+                    showarrow=False,
+                    yshift=15,
+                    font=dict(size=10)
+                )
+            fig.update_layout(
+                yaxis=dict(range=[0, max(probabilities) * 1.3])  # Add 30% padding for annotations
+            )
             
         elif chart_type == "box":
-            # Create box plot with tokens on x-axis showing confidence distribution
+            # Create box plot showing confidence distribution
             fig = go.Figure()
             fig.add_trace(go.Box(
-                x=tokens,
                 y=probabilities,
                 name="Token Confidence",
                 boxpoints='all',
                 jitter=0.3,
                 pointpos=-1.8,
-                hovertemplate="<b>Token:</b> %{x}<br>" +
+                text=tokens,
+                hovertemplate="<b>Token:</b> %{text}<br>" +
                              "<b>Confidence:</b> %{y:.2f}%<extra></extra>"
             ))
             fig.update_layout(
-                title="Token Confidence Distribution",
-                xaxis_title="Tokens",
+                title="Token Confidence Distribution (Box Plot)",
                 yaxis_title="Confidence (%)",
                 showlegend=False
             )
-            fig.update_xaxes(tickangle=45)
             
         else:  # Default to bar chart
             fig = px.bar(
