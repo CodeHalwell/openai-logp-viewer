@@ -803,6 +803,12 @@ def main():
             # Filter data based on search and confidence
             df = pd.DataFrame(token_data)
             
+            # Remove quotation marks from Token and Alternative columns for cleaner display
+            df['Token'] = df['Token'].str.replace('"', '')
+            df['Alt 1'] = df['Alt 1'].str.replace('"', '')
+            df['Alt 2'] = df['Alt 2'].str.replace('"', '')
+            df['Alt 3'] = df['Alt 3'].str.replace('"', '')
+            
             if search_term:
                 mask = df['Token'].str.contains(search_term, case=False, na=False)
                 df = df[mask]
