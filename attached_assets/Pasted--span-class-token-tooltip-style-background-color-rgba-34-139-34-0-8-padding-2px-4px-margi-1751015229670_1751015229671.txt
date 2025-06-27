@@ -1,0 +1,328 @@
+<span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                The
+                <span class="tooltip-content">
+            <strong>Token:</strong> "The"<br>
+            <strong>Logprob:</strong> -0.0003<br>
+            <strong>Confidence:</strong> 99.97%<br>
+            <strong>Position:</strong> 1
+            <br><strong>Top Alternatives:</strong><br>• The: 100.0%<br>• As: 0.0%<br>• Artificial: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 future
+                <span class="tooltip-content">
+            <strong>Token:</strong> " future"<br>
+            <strong>Logprob:</strong> -0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 2
+            <br><strong>Top Alternatives:</strong><br>•  future: 100.0%<br>•  potential: 0.0%<br>•  trajectory: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 of
+                <span class="tooltip-content">
+            <strong>Token:</strong> " of"<br>
+            <strong>Logprob:</strong> 0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 3
+            <br><strong>Top Alternatives:</strong><br>•  of: 100.0%<br>•  development: 0.0%<br>•  trajectory: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 artificial
+                <span class="tooltip-content">
+            <strong>Token:</strong> " artificial"<br>
+            <strong>Logprob:</strong> -0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 4
+            <br><strong>Top Alternatives:</strong><br>•  artificial: 100.0%<br>•  Artificial: 0.0%<br>•  AI: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 intelligence
+                <span class="tooltip-content">
+            <strong>Token:</strong> " intelligence"<br>
+            <strong>Logprob:</strong> 0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 5
+            <br><strong>Top Alternatives:</strong><br>•  intelligence: 100.0%<br>•  Intelligence: 0.0%<br>•  intellig: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 (
+                <span class="tooltip-content">
+            <strong>Token:</strong> " ("<br>
+            <strong>Logprob:</strong> -0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 6
+            <br><strong>Top Alternatives:</strong><br>•  (: 100.0%<br>•  is: 0.0%<br>•  holds: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                AI
+                <span class="tooltip-content">
+            <strong>Token:</strong> "AI"<br>
+            <strong>Logprob:</strong> 0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 7
+            <br><strong>Top Alternatives:</strong><br>• AI: 100.0%<br>•  AI: 0.0%<br>• IA: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                )
+                <span class="tooltip-content">
+            <strong>Token:</strong> ")"<br>
+            <strong>Logprob:</strong> -0.0000<br>
+            <strong>Confidence:</strong> 100.00%<br>
+            <strong>Position:</strong> 8
+            <br><strong>Top Alternatives:</strong><br>• ): 100.0%<br>• ),: 0.0%<br>• )—: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 is
+                <span class="tooltip-content">
+            <strong>Token:</strong> " is"<br>
+            <strong>Logprob:</strong> -0.3350<br>
+            <strong>Confidence:</strong> 71.53%<br>
+            <strong>Position:</strong> 9
+            <br><strong>Top Alternatives:</strong><br>•  is: 71.5%<br>•  holds: 26.3%<br>•  promises: 1.7%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(255, 165, 0, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 a
+                <span class="tooltip-content">
+            <strong>Token:</strong> " a"<br>
+            <strong>Logprob:</strong> -0.6650<br>
+            <strong>Confidence:</strong> 51.43%<br>
+            <strong>Position:</strong> 10
+            <br><strong>Top Alternatives:</strong><br>•  a: 51.4%<br>•  poised: 31.2%<br>•  expected: 7.9%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(255, 165, 0, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 topic
+                <span class="tooltip-content">
+            <strong>Token:</strong> " topic"<br>
+            <strong>Logprob:</strong> -0.5336<br>
+            <strong>Confidence:</strong> 58.65%<br>
+            <strong>Position:</strong> 11
+            <br><strong>Top Alternatives:</strong><br>•  topic: 58.6%<br>•  rapidly: 11.5%<br>•  dynamic: 9.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 of
+                <span class="tooltip-content">
+            <strong>Token:</strong> " of"<br>
+            <strong>Logprob:</strong> -0.0133<br>
+            <strong>Confidence:</strong> 98.68%<br>
+            <strong>Position:</strong> 12
+            <br><strong>Top Alternatives:</strong><br>•  of: 98.7%<br>•  that: 0.5%<br>•  filled: 0.5%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(220, 20, 60, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 immense
+                <span class="tooltip-content">
+            <strong>Token:</strong> " immense"<br>
+            <strong>Logprob:</strong> -2.7163<br>
+            <strong>Confidence:</strong> 6.61%<br>
+            <strong>Position:</strong> 13
+            <br><strong>Top Alternatives:</strong><br>•  significant: 33.6%<br>•  great: 29.6%<br>•  considerable: 14.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 interest
+                <span class="tooltip-content">
+            <strong>Token:</strong> " interest"<br>
+            <strong>Logprob:</strong> -0.0449<br>
+            <strong>Confidence:</strong> 95.61%<br>
+            <strong>Position:</strong> 14
+            <br><strong>Top Alternatives:</strong><br>•  interest: 95.6%<br>•  speculation: 2.5%<br>•  significance: 0.5%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 and
+                <span class="tooltip-content">
+            <strong>Token:</strong> " and"<br>
+            <strong>Logprob:</strong> -0.0111<br>
+            <strong>Confidence:</strong> 98.89%<br>
+            <strong>Position:</strong> 15
+            <br><strong>Top Alternatives:</strong><br>•  and: 98.9%<br>• ,: 1.1%<br>•  across: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 speculation
+                <span class="tooltip-content">
+            <strong>Token:</strong> " speculation"<br>
+            <strong>Logprob:</strong> -0.0540<br>
+            <strong>Confidence:</strong> 94.74%<br>
+            <strong>Position:</strong> 16
+            <br><strong>Top Alternatives:</strong><br>•  speculation: 94.7%<br>•  debate: 3.2%<br>•  potential: 0.7%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                ,
+                <span class="tooltip-content">
+            <strong>Token:</strong> ","<br>
+            <strong>Logprob:</strong> -0.1131<br>
+            <strong>Confidence:</strong> 89.30%<br>
+            <strong>Position:</strong> 17
+            <br><strong>Top Alternatives:</strong><br>• ,: 89.3%<br>• .: 6.5%<br>•  across: 3.9%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(220, 20, 60, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 with
+                <span class="tooltip-content">
+            <strong>Token:</strong> " with"<br>
+            <strong>Logprob:</strong> -1.0843<br>
+            <strong>Confidence:</strong> 33.81%<br>
+            <strong>Position:</strong> 18
+            <br><strong>Top Alternatives:</strong><br>•  with: 33.8%<br>•  and: 16.0%<br>•  encompassing: 14.1%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(220, 20, 60, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 numerous
+                <span class="tooltip-content">
+            <strong>Token:</strong> " numerous"<br>
+            <strong>Logprob:</strong> -1.4257<br>
+            <strong>Confidence:</strong> 24.03%<br>
+            <strong>Position:</strong> 19
+            <br><strong>Top Alternatives:</strong><br>•  potential: 27.2%<br>•  numerous: 24.0%<br>•  various: 16.5%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 potential
+                <span class="tooltip-content">
+            <strong>Token:</strong> " potential"<br>
+            <strong>Logprob:</strong> -0.1881<br>
+            <strong>Confidence:</strong> 82.85%<br>
+            <strong>Position:</strong> 20
+            <br><strong>Top Alternatives:</strong><br>•  potential: 82.9%<br>•  possibilities: 12.7%<br>•  trends: 1.9%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 developments
+                <span class="tooltip-content">
+            <strong>Token:</strong> " developments"<br>
+            <strong>Logprob:</strong> -0.2702<br>
+            <strong>Confidence:</strong> 76.33%<br>
+            <strong>Position:</strong> 21
+            <br><strong>Top Alternatives:</strong><br>•  developments: 76.3%<br>•  directions: 9.1%<br>•  trajectories: 8.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(220, 20, 60, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 across
+                <span class="tooltip-content">
+            <strong>Token:</strong> " across"<br>
+            <strong>Logprob:</strong> -1.9888<br>
+            <strong>Confidence:</strong> 13.69%<br>
+            <strong>Position:</strong> 22
+            <br><strong>Top Alternatives:</strong><br>•  and: 69.5%<br>•  across: 13.7%<br>•  that: 5.7%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 various
+                <span class="tooltip-content">
+            <strong>Token:</strong> " various"<br>
+            <strong>Logprob:</strong> -0.0123<br>
+            <strong>Confidence:</strong> 98.78%<br>
+            <strong>Position:</strong> 23
+            <br><strong>Top Alternatives:</strong><br>•  various: 98.8%<br>•  a: 0.5%<br>•  different: 0.3%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(220, 20, 60, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 sectors
+                <span class="tooltip-content">
+            <strong>Token:</strong> " sectors"<br>
+            <strong>Logprob:</strong> -1.0900<br>
+            <strong>Confidence:</strong> 33.62%<br>
+            <strong>Position:</strong> 24
+            <br><strong>Top Alternatives:</strong><br>•  domains: 48.9%<br>•  sectors: 33.6%<br>•  fields: 15.9%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                .
+                <span class="tooltip-content">
+            <strong>Token:</strong> "."<br>
+            <strong>Logprob:</strong> -0.0356<br>
+            <strong>Confidence:</strong> 96.50%<br>
+            <strong>Position:</strong> 25
+            <br><strong>Top Alternatives:</strong><br>• .: 96.5%<br>•  and: 3.3%<br>• ,: 0.1%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 Here
+                <span class="tooltip-content">
+            <strong>Token:</strong> " Here"<br>
+            <strong>Logprob:</strong> -0.0224<br>
+            <strong>Confidence:</strong> 97.78%<br>
+            <strong>Position:</strong> 26
+            <br><strong>Top Alternatives:</strong><br>•  Here: 97.8%<br>•  While: 1.1%<br>•  Below: 0.4%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 are
+                <span class="tooltip-content">
+            <strong>Token:</strong> " are"<br>
+            <strong>Logprob:</strong> -0.0002<br>
+            <strong>Confidence:</strong> 99.98%<br>
+            <strong>Position:</strong> 27
+            <br><strong>Top Alternatives:</strong><br>•  are: 100.0%<br>• ’s: 0.0%<br>•  is: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 some
+                <span class="tooltip-content">
+            <strong>Token:</strong> " some"<br>
+            <strong>Logprob:</strong> -0.2053<br>
+            <strong>Confidence:</strong> 81.44%<br>
+            <strong>Position:</strong> 28
+            <br><strong>Top Alternatives:</strong><br>•  some: 81.4%<br>•  several: 18.2%<br>•  a: 0.2%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 key
+                <span class="tooltip-content">
+            <strong>Token:</strong> " key"<br>
+            <strong>Logprob:</strong> -0.0459<br>
+            <strong>Confidence:</strong> 95.51%<br>
+            <strong>Position:</strong> 29
+            <br><strong>Top Alternatives:</strong><br>•  key: 95.5%<br>•  trends: 2.0%<br>•  anticipated: 1.1%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(255, 165, 0, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 trends
+                <span class="tooltip-content">
+            <strong>Token:</strong> " trends"<br>
+            <strong>Logprob:</strong> -0.3702<br>
+            <strong>Confidence:</strong> 69.06%<br>
+            <strong>Position:</strong> 30
+            <br><strong>Top Alternatives:</strong><br>•  trends: 69.1%<br>•  areas: 28.8%<br>•  aspects: 1.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(34, 139, 34, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 and
+                <span class="tooltip-content">
+            <strong>Token:</strong> " and"<br>
+            <strong>Logprob:</strong> -0.0006<br>
+            <strong>Confidence:</strong> 99.94%<br>
+            <strong>Position:</strong> 31
+            <br><strong>Top Alternatives:</strong><br>•  and: 99.9%<br>• ,: 0.0%<br>•  that: 0.0%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(255, 165, 0, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 possibilities
+                <span class="tooltip-content">
+            <strong>Token:</strong> " possibilities"<br>
+            <strong>Logprob:</strong> -0.7547<br>
+            <strong>Confidence:</strong> 47.01%<br>
+            <strong>Position:</strong> 32
+            <br><strong>Top Alternatives:</strong><br>•  possibilities: 47.0%<br>•  considerations: 25.2%<br>•  predictions: 11.9%<br></span>
+            </span>
+
+            <span class="token-tooltip" style="background-color: rgba(255, 165, 0, 0.8); padding: 2px 4px; margin: 1px; border-radius: 3px;">
+                 for
+                <span class="tooltip-content">
+            <strong>Token:</strong> " for"<br>
+            <strong>Logprob:</strong> -0.7119<br>
+            <strong>Confidence:</strong> 49.07%<br>
+            <strong>Position:</strong> 33
+            <br><strong>Top Alternatives:</strong><br>•  for: 49.1%<br>•  that: 26.3%<br>• :

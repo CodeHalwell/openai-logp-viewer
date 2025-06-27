@@ -102,7 +102,7 @@ def get_completion_with_logprobs(api_key_hash,
 
 
 def create_enhanced_highlighted_text(response, color_scheme="confidence"):
-    """Create HTML with highlighted text based on logprobs with hover tooltips."""
+    """Create simple highlighted text and return token details separately."""
     try:
         if not response or not hasattr(response, 'choices'):
             return ""
@@ -116,45 +116,6 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
             return ""
 
         html_parts = []
-        html_parts.append("""
-        <style>
-        .token-tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-        .token-tooltip .tooltip-content {
-            visibility: hidden;
-            background-color: #333;
-            color: white;
-            text-align: left;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1000;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            width: 200px;
-            font-size: 12px;
-            line-height: 1.4;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
-        }
-        .token-tooltip .tooltip-content::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
-        .token-tooltip:hover .tooltip-content {
-            visibility: visible;
-        }
-        </style>
-        """)
         
         for i, token in enumerate(logprobs):
             if token.logprob is not None:
@@ -169,27 +130,9 @@ def create_enhanced_highlighted_text(response, color_scheme="confidence"):
                 else:
                     color = "rgba(220, 20, 60, 0.8)"  # Red
 
-                # Create tooltip content with detailed information
-                tooltip_content = f"""
-                <strong>Token:</strong> "{html.escape(token.token)}"<br>
-                <strong>Logprob:</strong> {token.logprob:.4f}<br>
-                <strong>Confidence:</strong> {confidence:.2f}%<br>
-                <strong>Position:</strong> {i + 1}
-                """
-                
-                # Add top alternatives if available
-                if hasattr(token, 'top_logprobs') and token.top_logprobs:
-                    tooltip_content += "<br><strong>Top Alternatives:</strong><br>"
-                    for j, alt in enumerate(token.top_logprobs[:3]):  # Show top 3 alternatives
-                        alt_confidence = exp(alt.logprob) * 100
-                        tooltip_content += f"• {html.escape(alt.token)}: {alt_confidence:.1f}%<br>"
-
-                html_parts.append(f'''
-                <span class="token-tooltip" style="background-color: {color}; padding: 2px 4px; margin: 1px; border-radius: 3px;">
-                    {html.escape(token.token)}
-                    <span class="tooltip-content">{tooltip_content}</span>
-                </span>
-                ''')
+                html_parts.append(
+                    f'<span style="background-color: {color}; padding: 2px 4px; margin: 1px; border-radius: 3px;">{html.escape(token.token)}</span>'
+                )
 
         return ''.join(html_parts)
 
@@ -506,6 +449,50 @@ def main():
         if highlighted_html:
             st.subheader("🎨 Highlighted Text")
             st.markdown(highlighted_html, unsafe_allow_html=True)
+            
+            # Token details table
+            st.subheader("🔍 Token Details")
+            st.write("Detailed information for each token:")
+            
+            # Create token details data
+            token_data = []
+            choice = response.choices[0]
+            if hasattr(choice, 'logprobs') and choice.logprobs:
+                logprobs = choice.logprobs.content
+                for i, token in enumerate(logprobs):
+                    if token.logprob is not None:
+                        confidence = min(100, max(0, exp(token.logprob) * 100))
+                        
+                        # Get top alternatives
+                        alternatives = []
+                        if hasattr(token, 'top_logprobs') and token.top_logprobs:
+                            for alt in token.top_logprobs[:3]:
+                                alt_confidence = exp(alt.logprob) * 100
+                                alternatives.append(f"{alt.token} ({alt_confidence:.1f}%)")
+                        
+                        token_data.append({
+                            "Position": i + 1,
+                            "Token": f'"{token.token}"',
+                            "Logprob": f"{token.logprob:.4f}",
+                            "Confidence": f"{confidence:.2f}%",
+                            "Top Alternatives": " | ".join(alternatives) if alternatives else "N/A"
+                        })
+            
+            if token_data:
+                # Display as interactive dataframe
+                df = pd.DataFrame(token_data)
+                st.dataframe(
+                    df,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Position": st.column_config.NumberColumn("Pos", width="small"),
+                        "Token": st.column_config.TextColumn("Token", width="small"),
+                        "Logprob": st.column_config.TextColumn("Logprob", width="small"),
+                        "Confidence": st.column_config.TextColumn("Confidence", width="small"),
+                        "Top Alternatives": st.column_config.TextColumn("Top Alternatives", width="large")
+                    }
+                )
 
         # Charts and analysis
         col1, col2 = st.columns(2)
