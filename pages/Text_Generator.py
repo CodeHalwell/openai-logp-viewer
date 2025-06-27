@@ -208,40 +208,57 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
         positions = positions[:max_tokens]
 
         if chart_type == "bar":
-            fig = px.bar(
+            # Create confidence-based colors for bars
+            colors = []
+            for prob in probabilities:
+                if prob >= 80:
+                    colors.append('#2E8B57')  # Sea Green - Very High
+                elif prob >= 60:
+                    colors.append('#32CD32')  # Lime Green - High
+                elif prob >= 40:
+                    colors.append('#FFD700')  # Gold - Medium
+                elif prob >= 20:
+                    colors.append('#FF8C00')  # Dark Orange - Low
+                else:
+                    colors.append('#DC143C')  # Crimson - Very Low
+            
+            fig = go.Figure(data=[go.Bar(
                 x=positions,
                 y=probabilities,
-                hover_data={'Token': tokens},
-                title="Token Confidence Levels",
-                labels={
-                    "x": "Token Position",
-                    "y": "Confidence (%)"
-                }
-            )
-            # Customize hover template
-            fig.update_traces(
+                marker_color=colors,
+                text=[f"{token}<br>{prob:.1f}%" for token, prob in zip(tokens, probabilities)],
+                textposition="outside",
+                textfont=dict(size=10),
                 hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Token:</b> %{customdata[0]}<br>" +
+                             "<b>Token:</b> %{text}<br>" +
                              "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
-                customdata=[[token] for token in tokens]
+                customdata=tokens
+            )])
+            fig.update_layout(
+                title="Token Confidence Levels",
+                xaxis_title="Token Position",
+                yaxis_title="Confidence (%)",
+                showlegend=False
             )
             
         elif chart_type == "line":
             fig = px.line(
-                x=positions,
+                x=tokens,
                 y=probabilities,
                 title="Token Confidence Progression",
                 labels={
-                    "x": "Token Position", 
+                    "x": "Tokens", 
                     "y": "Confidence (%)"
                 },
                 markers=True
             )
             fig.update_traces(
-                hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Token:</b> " + tokens[0] if tokens else "" + "<br>" +
-                             "<b>Confidence:</b> %{y:.2f}%<extra></extra>"
+                hovertemplate="<b>Token:</b> %{x}<br>" +
+                             "<b>Confidence:</b> %{y:.2f}%<extra></extra>",
+                line=dict(width=3),
+                marker=dict(size=8)
             )
+            fig.update_xaxes(tickangle=45)
             
         elif chart_type == "scatter":
             # Create confidence categories for color coding
@@ -259,70 +276,51 @@ def create_enhanced_logprob_chart(response, chart_type="bar"):
                     confidence_categories.append("Very Low (<20%)")
             
             fig = px.scatter(
-                x=positions,
+                x=tokens,
                 y=probabilities,
                 color=confidence_categories,
-                size=[max(5, prob/5) for prob in probabilities],  # Size based on confidence
-                hover_data={'Token': tokens},
+                size=[max(8, prob/4) for prob in probabilities],  # Size based on confidence
                 title="Token Confidence Distribution",
                 labels={
-                    "x": "Token Position",
+                    "x": "Tokens",
                     "y": "Confidence (%)",
                     "color": "Confidence Level"
+                },
+                color_discrete_map={
+                    "Very High (80%+)": "#2E8B57",
+                    "High (60-80%)": "#32CD32", 
+                    "Medium (40-60%)": "#FFD700",
+                    "Low (20-40%)": "#FF8C00",
+                    "Very Low (<20%)": "#DC143C"
                 }
             )
-            
-        elif chart_type == "histogram":
-            fig = px.histogram(
-                x=probabilities,
-                nbins=20,
-                title="Confidence Distribution Histogram",
-                labels={
-                    "x": "Confidence (%)",
-                    "y": "Number of Tokens"
-                }
+            fig.update_traces(
+                hovertemplate="<b>Token:</b> %{x}<br>" +
+                             "<b>Confidence:</b> %{y:.2f}%<br>" +
+                             "<b>Level:</b> %{color}<extra></extra>"
             )
-            fig.update_layout(bargap=0.1)
+            fig.update_xaxes(tickangle=45)
             
         elif chart_type == "box":
-            # Create box plot showing confidence distribution
+            # Create box plot with tokens on x-axis showing confidence distribution
             fig = go.Figure()
             fig.add_trace(go.Box(
+                x=tokens,
                 y=probabilities,
                 name="Token Confidence",
                 boxpoints='all',
                 jitter=0.3,
                 pointpos=-1.8,
-                text=tokens,
-                hovertemplate="<b>Token:</b> %{text}<br>" +
+                hovertemplate="<b>Token:</b> %{x}<br>" +
                              "<b>Confidence:</b> %{y:.2f}%<extra></extra>"
             ))
             fig.update_layout(
-                title="Token Confidence Distribution (Box Plot)",
+                title="Token Confidence Distribution",
+                xaxis_title="Tokens",
                 yaxis_title="Confidence (%)",
                 showlegend=False
             )
-            
-        elif chart_type == "waterfall":
-            # Waterfall chart showing confidence changes between tokens
-            changes = [probabilities[0]]  # Start with first value
-            for i in range(1, len(probabilities)):
-                changes.append(probabilities[i] - probabilities[i-1])
-            
-            fig = go.Figure(go.Waterfall(
-                name="Confidence Changes",
-                orientation="v",
-                measure=["absolute"] + ["relative"] * (len(changes) - 1),
-                x=[f"Token {i+1}" for i in range(len(changes))],
-                y=changes,
-                connector={"line": {"color": "rgb(63, 63, 63)"}},
-                hovertemplate="<b>Position:</b> %{x}<br>" +
-                             "<b>Change:</b> %{y:.2f}%<extra></extra>"
-            ))
-            fig.update_layout(
-                title="Token Confidence Changes (Waterfall)",
-                yaxis_title="Confidence Change (%)"
-            )
+            fig.update_xaxes(tickangle=45)
             
         else:  # Default to bar chart
             fig = px.bar(
@@ -507,7 +505,7 @@ def main():
         color_scheme = st.selectbox("Color Scheme",
                                     ["confidence", "rainbow", "heat", "ocean"])
         chart_type = st.selectbox("Chart Type", 
-                                 ["bar", "line", "scatter", "histogram", "box", "waterfall"])
+                                 ["bar", "line", "scatter", "box"])
 
     # Main content
     st.header("💭 Text Generation")
